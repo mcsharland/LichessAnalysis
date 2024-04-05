@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Popup</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 20px;
+      background-color: #f2f2f2;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    h1 {
+      color: #4CAF50;
+      font-size: 24px;
+      margin: 0;
+      margin-bottom: 24px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      opacity: 100%;
+      box-sizing: border-box; 
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      cursor: not-allowed;
+    }
+    p {
+      font-size: 14px;
+      color: #666;
+      margin-top: 16px;
+      margin-bottom: 0; 
+    }
+  </style>
+</head>
+<body>
+  <h1>Lichess Analysis</h1>
+  <button id="lichessButton" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <img src="icon.svg" alt="" style="height: 1.2em; width: auto;">
+    Analyze on Lichess
+  </button>
+  <p>Click the button to import the current game to an analysis board on Lichess.</p>
+  <script src="../dist/popup.js"></script>
+</body>
+</html>
