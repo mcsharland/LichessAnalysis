@@ -35,6 +35,7 @@ const hijackButton = (button: HTMLButtonElement) => {
   if (button) {
     const clonedButton = button.cloneNode(true) as HTMLButtonElement;
     button.parentNode?.replaceChild(clonedButton, button);
+
     clonedButton.addEventListener("click", (event) => {
       event.preventDefault();
       if (!isLichessInProgress) {
@@ -43,6 +44,42 @@ const hijackButton = (button: HTMLButtonElement) => {
       }
     });
     clonedButton.disabled = false;
+
+    if (button.dataset.cy === "sidebar-game-review-button") {
+      clonedButton.innerHTML =
+        '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+    } else if (
+      clonedButton.classList.contains("game-over-review-button-background")
+    ) {
+      const parent = clonedButton.parentElement;
+      const label = parent?.querySelector(
+        ".game-over-review-button-label"
+      );
+
+      if (label) {
+        label.textContent = "Lichess Analysis";
+
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (
+              mutation.type === "childList" ||
+              mutation.type === "characterData"
+            ) {
+              const currentText = label.textContent;
+              if (currentText !== "Lichess Analysis") {
+                label.textContent = "Lichess Analysis";
+              }
+            }
+          });
+        });
+
+        observer.observe(label, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+        });
+      }
+    }
   } else {
     throw new Error("button not found");
   }
@@ -76,12 +113,14 @@ const gameEndObserver = new MutationObserver((mutations, observer) => {
   }
 });
 
-const lichess = (def=true) => {
-  const shareButton = def ? document.querySelector(
-    ".icon-font-chess.share.live-game-buttons-button"
-  ) as HTMLElement : document.querySelector('button[aria-label="Share"]') as HTMLElement;
+const lichess = (def = true) => {
+  const shareButton = def
+    ? (document.querySelector(
+        ".icon-font-chess.share.live-game-buttons-button"
+      ) as HTMLElement)
+    : (document.querySelector('button[aria-label="Share"]') as HTMLElement);
 
-  if(!shareButton) {
+  if (!shareButton) {
     alert("Error: Unable to find PGN...");
     return;
   }
@@ -125,20 +164,22 @@ const lichess = (def=true) => {
 gameEndObserver.observe(document.body, { childList: true, subtree: true });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-
   if (msg.type === "live") {
     if (ready) {
       lichess();
     }
     sendResponse({ success: true });
-  }
-  else if (msg.type === "events") { 
-      const button = document.querySelector('button[aria-label="Share"]') as HTMLElement;
-      if (button) {
+  } else if (msg.type === "events") {
+    const button = document.querySelector(
+      'button[aria-label="Share"]'
+    ) as HTMLElement;
+    if (button) {
       lichess(false);
-      } else {
-        alert("Error: PGN not found. Try again in a moment if you believe this is an error")
-      }
+    } else {
+      alert(
+        "Error: PGN not found. Try again in a moment if you believe this is an error"
+      );
+    }
   }
   return true;
 });

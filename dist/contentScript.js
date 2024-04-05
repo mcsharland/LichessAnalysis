@@ -41,6 +41,27 @@ const hijackButton = (button) => {
             }
         });
         clonedButton.disabled = false;
+        if (button.dataset.cy === "sidebar-game-review-button") {
+            clonedButton.innerHTML = '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+        }
+        else if (clonedButton.classList.contains("game-over-review-button-background")) {
+            const parentDiv = clonedButton.parentElement;
+            const labelSpan = parentDiv === null || parentDiv === void 0 ? void 0 : parentDiv.querySelector(".game-over-review-button-label");
+            if (labelSpan) {
+                labelSpan.textContent = "Lichess Analysis";
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === "childList" || mutation.type === "characterData") {
+                            const currentText = labelSpan.textContent;
+                            if (currentText !== "Lichess Analysis") {
+                                labelSpan.textContent = "Lichess Analysis";
+                            }
+                        }
+                    });
+                });
+                observer.observe(labelSpan, { childList: true, characterData: true, subtree: true });
+            }
+        }
     }
     else {
         throw new Error("button not found");
