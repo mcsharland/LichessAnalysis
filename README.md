@@ -3,7 +3,6 @@ chrome extension to import chess.com games to lichess analysis board. Overrides 
 
 # Set Up
 1. Clone the repo or download a zip
-2. Install dependencies with `npm install`
 3. Go to `chrome://extensions` or your favorite browsers equivalent. Enable developer mode, click load unpacked and select. Voila
 
 # Usage
