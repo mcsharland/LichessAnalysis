@@ -6,19 +6,32 @@ var __webpack_exports__ = {};
   \******************************/
 
 const parser = (pgn) => {
-    // matches valid chess moves
-    const regex = /(?:[NBRKQ]?(?:[a-h]|[1-8])?x?[a-h][1-8](?:=[QNBR])?|O-O|O-O-O)[+#]?/;
-    const strings = pgn.split(/\s+/);
-    const newstrings = strings.filter((str) => regex.test(str));
-    /*
-      Check if the last element contains '#' and remove it
-      The trailing '#' will prevent the board from being flipped
-    */
-    if (newstrings.length > 0 &&
-        newstrings[newstrings.length - 1].includes("#")) {
-        newstrings[newstrings.length - 1] = newstrings[newstrings.length - 1].replace("#", "");
-    }
-    return newstrings.join("_");
+    const removeParentheses = (str) => {
+        let result = '';
+        let level = 0;
+        let inParentheses = false;
+        for (let i = 0; i < str.length; i++) {
+            if (str[i] === '(') {
+                level++;
+                inParentheses = true;
+            }
+            else if (str[i] === ')') {
+                level--;
+                if (level === 0) {
+                    inParentheses = false;
+                }
+            }
+            else if (!inParentheses) {
+                result += str[i];
+            }
+        }
+        return result;
+    };
+    return removeParentheses(pgn)
+        .split(/\s+/) // split by space
+        .filter(str => /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(str)) // filter valid moves
+        .join("_")
+        .replace(/#$/, ''); // remove a trailing '#' to ensure board flip works
 };
 const disableButton = (button) => {
     if (button) {

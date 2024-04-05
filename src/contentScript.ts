@@ -1,25 +1,33 @@
-const parser = (pgn: String) => {
-  // matches valid chess moves
-  const regex =
-    /(?:[NBRKQ]?(?:[a-h]|[1-8])?x?[a-h][1-8](?:=[QNBR])?|O-O|O-O-O)[+#]?/;
+const parser = (pgn: string) => {
+  const removeParentheses = (str: string): string => {
+    let result = '';
+    let level = 0;
+    let inParentheses = false;
 
-  const strings = pgn.split(/\s+/);
-  const newstrings = strings.filter((str) => regex.test(str));
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === '(') {
+        level++;
+        inParentheses = true;
+      } else if (str[i] === ')') {
+        level--;
+        if (level === 0) {
+          inParentheses = false;
+        }
+      } else if (!inParentheses) {
+        result += str[i];
+      }
+    }
 
-  /* 
-    Check if the last element contains '#' and remove it
-    The trailing '#' will prevent the board from being flipped
-  */
-  if (
-    newstrings.length > 0 &&
-    newstrings[newstrings.length - 1].includes("#")
-  ) {
-    newstrings[newstrings.length - 1] = newstrings[
-      newstrings.length - 1
-    ].replace("#", "");
-  }
-  return newstrings.join("_");
+    return result;
+  };
+
+  return removeParentheses(pgn)
+    .split(/\s+/) // split by space
+    .filter(str => /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(str)) // filter valid moves
+    .join("_") 
+    .replace(/#$/, ''); // remove a trailing '#' to ensure board flip works
 };
+
 
 const disableButton = (button: HTMLButtonElement) => {
   if (button) {
