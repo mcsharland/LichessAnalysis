@@ -143,7 +143,7 @@ const lichess = (def = true) => {
           const link =
             `https://lichess.org/analysis/pgn/` +
             formatted +
-            (black ? "?color=black" : "");
+            (black ? "?color=black" : "") + "#0";
           window.open(link, "_blank")?.focus();
         } catch (error) {
           isLichessInProgress = false;

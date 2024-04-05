@@ -42,24 +42,30 @@ const hijackButton = (button) => {
         });
         clonedButton.disabled = false;
         if (button.dataset.cy === "sidebar-game-review-button") {
-            clonedButton.innerHTML = '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+            clonedButton.innerHTML =
+                '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
         }
         else if (clonedButton.classList.contains("game-over-review-button-background")) {
-            const parentDiv = clonedButton.parentElement;
-            const labelSpan = parentDiv === null || parentDiv === void 0 ? void 0 : parentDiv.querySelector(".game-over-review-button-label");
-            if (labelSpan) {
-                labelSpan.textContent = "Lichess Analysis";
+            const parent = clonedButton.parentElement;
+            const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
+            if (label) {
+                label.textContent = "Lichess Analysis";
                 const observer = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
-                        if (mutation.type === "childList" || mutation.type === "characterData") {
-                            const currentText = labelSpan.textContent;
+                        if (mutation.type === "childList" ||
+                            mutation.type === "characterData") {
+                            const currentText = label.textContent;
                             if (currentText !== "Lichess Analysis") {
-                                labelSpan.textContent = "Lichess Analysis";
+                                label.textContent = "Lichess Analysis";
                             }
                         }
                     });
                 });
-                observer.observe(labelSpan, { childList: true, characterData: true, subtree: true });
+                observer.observe(label, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true,
+                });
             }
         }
     }
@@ -88,7 +94,9 @@ const gameEndObserver = new MutationObserver((mutations, observer) => {
     }
 });
 const lichess = (def = true) => {
-    const shareButton = def ? document.querySelector(".icon-font-chess.share.live-game-buttons-button") : document.querySelector('button[aria-label="Share"]');
+    const shareButton = def
+        ? document.querySelector(".icon-font-chess.share.live-game-buttons-button")
+        : document.querySelector('button[aria-label="Share"]');
     if (!shareButton) {
         alert("Error: Unable to find PGN...");
         return;
@@ -106,7 +114,7 @@ const lichess = (def = true) => {
                     const formatted = parser(PGNElement.value);
                     const link = `https://lichess.org/analysis/pgn/` +
                         formatted +
-                        (black ? "?color=black" : "");
+                        (black ? "?color=black" : "") + "#0";
                     (_a = window.open(link, "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
                 }
                 catch (error) {
