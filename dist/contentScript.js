@@ -117,18 +117,23 @@ const lichess = (def = true) => {
     setTimeout(() => {
         shareButton.click();
         const checkPGN = () => {
-            var _a;
+            var _a, _b, _c, _d, _e, _f, _g;
             const PGNElement = document.querySelector(".share-menu-tab-pgn-textarea");
             if (PGNElement) {
                 const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
                 const black = document.getElementsByClassName("board flipped").length > 0;
+                let move = (_b = (_a = document.getElementsByClassName("vertical-move-list")[0]) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.dataset.ply;
+                if (!move) {
+                    const moveData = (_f = (_e = (_d = (_c = document.querySelector("wc-horizontal-move-list")) === null || _c === void 0 ? void 0 : _c.querySelector('[class*="node-highlight-content"][class*="selected"]')) === null || _d === void 0 ? void 0 : _d.parentElement) === null || _e === void 0 ? void 0 : _e.dataset.node) === null || _f === void 0 ? void 0 : _f.split('-');
+                    move = moveData && moveData[0] === '0' ? String(parseInt(moveData[1], 10) + 1) : '0';
+                }
                 closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
                 try {
                     const formatted = parser(PGNElement.value);
                     const link = `https://lichess.org/analysis/pgn/` +
                         formatted +
-                        (black ? "?color=black" : "") + "#0";
-                    (_a = window.open(link, "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
+                        (black ? "?color=black" : "") + `#${move}`;
+                    (_g = window.open(link, "_blank")) === null || _g === void 0 ? void 0 : _g.focus();
                 }
                 catch (error) {
                     isLichessInProgress = false;

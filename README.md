@@ -8,7 +8,7 @@ A chrome extension to import chess.com games to lichess analysis board. Override
 # Usage
 Literally just click the review button and it will take you a lichess analysis board. Thats about it.
 It should also work with games in the events tab if you click the button in the extensions popup, though this hasn't been tested thoroughly.
-Sadly this extension will not work with games from non-standard starting positions, such as chess 960.
+Sadly this extension will not work with games from non-standard starting positions, such as chess 960 or record alternate lines played on the board.
 
 
 # Extras

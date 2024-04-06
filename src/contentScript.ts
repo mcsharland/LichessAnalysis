@@ -145,13 +145,20 @@ const lichess = (def = true) => {
         ) as HTMLElement;
         const black =
           document.getElementsByClassName("board flipped").length > 0;
+        let move = 
+          (document.getElementsByClassName("vertical-move-list")[0]?.getElementsByClassName("selected")[0] as HTMLElement)?.dataset.ply;
+        if(!move) {
+          const moveData = (document.querySelector("wc-horizontal-move-list")?.querySelector('[class*="node-highlight-content"][class*="selected"]')?.parentElement as HTMLElement)?.dataset.node?.split('-');
+          
+          move = moveData && moveData[0] === '0' ? String(parseInt(moveData[1], 10) + 1) : '0';
+        }
         closeButton?.click();
         try {
           const formatted = parser(PGNElement.value);
           const link =
             `https://lichess.org/analysis/pgn/` +
             formatted +
-            (black ? "?color=black" : "") + "#0";
+            (black ? "?color=black" : "") + `#${move}`;
           window.open(link, "_blank")?.focus();
         } catch (error) {
           isLichessInProgress = false;
