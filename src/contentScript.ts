@@ -54,34 +54,45 @@ const hijackButton = (button: HTMLButtonElement) => {
     clonedButton.disabled = false;
 
     if (button.dataset.cy === "sidebar-game-review-button") {
-      clonedButton.innerHTML =
-        '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
-    } else if (
-      clonedButton.classList.contains("game-over-review-button-background")
-    ) {
+      const span = clonedButton.querySelector("span:not(.ui_v5-button-icon)");
+
+      if (span) {
+        span.textContent = "Lichess";
+
+        const sidebarObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === "childList" || mutation.type === "characterData") {
+              if (span.textContent !== "Lichess") {
+                span.textContent = "Lichess";
+              }
+            }
+          });
+        });
+
+        sidebarObserver.observe(span, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+        });
+      }
+    } else if (clonedButton.classList.contains("game-over-review-button-background")) {
       const parent = clonedButton.parentElement;
-      const label = parent?.querySelector(
-        ".game-over-review-button-label"
-      );
+      const label = parent?.querySelector(".game-over-review-button-label");
 
       if (label) {
         label.textContent = "Lichess Analysis";
 
-        const observer = new MutationObserver((mutations) => {
+        const popupObserver = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
-            if (
-              mutation.type === "childList" ||
-              mutation.type === "characterData"
-            ) {
-              const currentText = label.textContent;
-              if (currentText !== "Lichess Analysis") {
+            if (mutation.type === "childList" || mutation.type === "characterData") {
+              if (label.textContent !== "Lichess Analysis") {
                 label.textContent = "Lichess Analysis";
               }
             }
           });
         });
 
-        observer.observe(label, {
+        popupObserver.observe(label, {
           childList: true,
           characterData: true,
           subtree: true,
