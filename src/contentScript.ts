@@ -54,45 +54,34 @@ const hijackButton = (button: HTMLButtonElement) => {
     clonedButton.disabled = false;
 
     if (button.dataset.cy === "sidebar-game-review-button") {
-      const span = clonedButton.querySelector("span:not(.ui_v5-button-icon)");
-
-      if (span) {
-        span.textContent = "Lichess";
-
-        const sidebarObserver = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === "childList" || mutation.type === "characterData") {
-              if (span.textContent !== "Lichess") {
-                span.textContent = "Lichess";
-              }
-            }
-          });
-        });
-
-        sidebarObserver.observe(span, {
-          childList: true,
-          characterData: true,
-          subtree: true,
-        });
-      }
-    } else if (clonedButton.classList.contains("game-over-review-button-background")) {
+      clonedButton.innerHTML =
+        '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+    } else if (
+      clonedButton.classList.contains("game-over-review-button-background")
+    ) {
       const parent = clonedButton.parentElement;
-      const label = parent?.querySelector(".game-over-review-button-label");
+      const label = parent?.querySelector(
+        ".game-over-review-button-label"
+      );
 
       if (label) {
         label.textContent = "Lichess Analysis";
 
-        const popupObserver = new MutationObserver((mutations) => {
+        const observer = new MutationObserver((mutations) => {
           mutations.forEach((mutation) => {
-            if (mutation.type === "childList" || mutation.type === "characterData") {
-              if (label.textContent !== "Lichess Analysis") {
+            if (
+              mutation.type === "childList" ||
+              mutation.type === "characterData"
+            ) {
+              const currentText = label.textContent;
+              if (currentText !== "Lichess Analysis") {
                 label.textContent = "Lichess Analysis";
               }
             }
           });
         });
 
-        popupObserver.observe(label, {
+        observer.observe(label, {
           childList: true,
           characterData: true,
           subtree: true,
@@ -104,6 +93,8 @@ const hijackButton = (button: HTMLButtonElement) => {
   }
 };
 
+// I am not proud of this but it was annoying to fix and this works
+let stopObs = false;
 const gameEndObserver = new MutationObserver((mutations, observer) => {
   const gameReviewButton = document.querySelector(
     '[data-cy="sidebar-game-review-button"]'
@@ -112,22 +103,23 @@ const gameEndObserver = new MutationObserver((mutations, observer) => {
     ".ui_v5-button-component.ui_v5-button-primary.ui_v5-button-large.ui_v5-button-full.game-over-review-button-background"
   ) as HTMLButtonElement;
 
-  if (gameReviewButton) {
+  if (gameReviewButton && !(gameReviewButton.textContent?.includes("Lichess"))) {
     disableButton(gameReviewButton);
     setTimeout(() => {
       hijackButton(gameReviewButton);
     }, 0);
   }
 
-  if (popUpReviewButton) {
+  if (popUpReviewButton && !stopObs) {
     disableButton(popUpReviewButton);
     setTimeout(() => {
       hijackButton(popUpReviewButton);
     }, 0);
+
   }
 
-  if (gameReviewButton && popUpReviewButton) {
-    observer.disconnect();
+  if (gameReviewButton?.textContent?.includes("Lichess") && popUpReviewButton) {
+      stopObs = true;
     ready = true;
   }
 });
