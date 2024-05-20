@@ -7,15 +7,15 @@ var __webpack_exports__ = {};
 
 const parser = (pgn) => {
     const removeParentheses = (str) => {
-        let result = '';
+        let result = "";
         let level = 0;
         let inParentheses = false;
         for (let i = 0; i < str.length; i++) {
-            if (str[i] === '(') {
+            if (str[i] === "(") {
                 level++;
                 inParentheses = true;
             }
-            else if (str[i] === ')') {
+            else if (str[i] === ")") {
                 level--;
                 if (level === 0) {
                     inParentheses = false;
@@ -29,9 +29,9 @@ const parser = (pgn) => {
     };
     return removeParentheses(pgn)
         .split(/\s+/) // split by space
-        .filter(str => /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(str)) // filter valid moves
+        .filter((str) => /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(str)) // filter valid moves
         .join("_")
-        .replace(/#$/, ''); // remove a trailing '#' to ensure board flip works
+        .replace(/#$/, ""); // remove a trailing '#' to ensure board flip works
 };
 const disableButton = (button) => {
     if (button) {
@@ -54,7 +54,7 @@ const hijackButton = (button) => {
             }
         });
         clonedButton.disabled = false;
-        if (button.dataset.cy === "sidebar-game-review-button") {
+        if (clonedButton.classList.contains("game-review-buttons-button")) {
             clonedButton.innerHTML =
                 '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
         }
@@ -86,10 +86,11 @@ const hijackButton = (button) => {
         throw new Error("button not found");
     }
 };
+// I am not proud of this but it was annoying to fix and this works
 let stopObs = false;
 const gameEndObserver = new MutationObserver((mutations, observer) => {
     var _a, _b;
-    const gameReviewButton = document.querySelector('[data-cy="sidebar-game-review-button"]');
+    const gameReviewButton = document.querySelector(".game-review-buttons-component .game-review-buttons-review .ui_v5-button-component.ui_v5-button-primary.game-review-buttons-button");
     const popUpReviewButton = document.querySelector(".ui_v5-button-component.ui_v5-button-primary.ui_v5-button-large.ui_v5-button-full.game-over-review-button-background");
     if (gameReviewButton && !((_a = gameReviewButton.textContent) === null || _a === void 0 ? void 0 : _a.includes("Lichess"))) {
         disableButton(gameReviewButton);
@@ -124,17 +125,23 @@ const lichess = (def = true) => {
             if (PGNElement) {
                 const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
                 const black = document.getElementsByClassName("board flipped").length > 0;
-                let move = (_b = (_a = document.getElementsByClassName("vertical-move-list")[0]) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.dataset.ply;
+                let move = (_b = (_a = document
+                    .getElementsByClassName("vertical-move-list")[0]) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.dataset.ply;
                 if (!move) {
-                    const moveData = (_f = (_e = (_d = (_c = document.querySelector("wc-horizontal-move-list")) === null || _c === void 0 ? void 0 : _c.querySelector('[class*="node-highlight-content"][class*="selected"]')) === null || _d === void 0 ? void 0 : _d.parentElement) === null || _e === void 0 ? void 0 : _e.dataset.node) === null || _f === void 0 ? void 0 : _f.split('-');
-                    move = moveData && moveData[0] === '0' ? String(parseInt(moveData[1], 10) + 1) : '0';
+                    const moveData = (_f = (_e = (_d = (_c = document
+                        .querySelector("wc-horizontal-move-list")) === null || _c === void 0 ? void 0 : _c.querySelector('[class*="node-highlight-content"][class*="selected"]')) === null || _d === void 0 ? void 0 : _d.parentElement) === null || _e === void 0 ? void 0 : _e.dataset.node) === null || _f === void 0 ? void 0 : _f.split("-");
+                    move =
+                        moveData && moveData[0] === "0"
+                            ? String(parseInt(moveData[1], 10) + 1)
+                            : "0";
                 }
                 closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
                 try {
                     const formatted = parser(PGNElement.value);
                     const link = `https://lichess.org/analysis/pgn/` +
                         formatted +
-                        (black ? "?color=black" : "") + `#${move}`;
+                        (black ? "?color=black" : "") +
+                        `#${move}`;
                     (_g = window.open(link, "_blank")) === null || _g === void 0 ? void 0 : _g.focus();
                 }
                 catch (error) {

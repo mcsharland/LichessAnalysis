@@ -1,14 +1,14 @@
 const parser = (pgn: string) => {
   const removeParentheses = (str: string): string => {
-    let result = '';
+    let result = "";
     let level = 0;
     let inParentheses = false;
 
     for (let i = 0; i < str.length; i++) {
-      if (str[i] === '(') {
+      if (str[i] === "(") {
         level++;
         inParentheses = true;
-      } else if (str[i] === ')') {
+      } else if (str[i] === ")") {
         level--;
         if (level === 0) {
           inParentheses = false;
@@ -23,11 +23,14 @@ const parser = (pgn: string) => {
 
   return removeParentheses(pgn)
     .split(/\s+/) // split by space
-    .filter(str => /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(str)) // filter valid moves
-    .join("_") 
-    .replace(/#$/, ''); // remove a trailing '#' to ensure board flip works
+    .filter((str) =>
+      /^(?:\d+\.+)?(?:[NBRKQ]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QNBR])?|O-O(?:-O)?)[+#]?$/.test(
+        str,
+      ),
+    ) // filter valid moves
+    .join("_")
+    .replace(/#$/, ""); // remove a trailing '#' to ensure board flip works
 };
-
 
 const disableButton = (button: HTMLButtonElement) => {
   if (button) {
@@ -53,16 +56,14 @@ const hijackButton = (button: HTMLButtonElement) => {
     });
     clonedButton.disabled = false;
 
-    if (button.dataset.cy === "sidebar-game-review-button") {
+    if (clonedButton.classList.contains("game-review-buttons-button")) {
       clonedButton.innerHTML =
         '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
     } else if (
       clonedButton.classList.contains("game-over-review-button-background")
     ) {
       const parent = clonedButton.parentElement;
-      const label = parent?.querySelector(
-        ".game-over-review-button-label"
-      );
+      const label = parent?.querySelector(".game-over-review-button-label");
 
       if (label) {
         label.textContent = "Lichess Analysis";
@@ -97,13 +98,13 @@ const hijackButton = (button: HTMLButtonElement) => {
 let stopObs = false;
 const gameEndObserver = new MutationObserver((mutations, observer) => {
   const gameReviewButton = document.querySelector(
-    '[data-cy="sidebar-game-review-button"]'
+    ".game-review-buttons-component .game-review-buttons-review .ui_v5-button-component.ui_v5-button-primary.game-review-buttons-button",
   ) as HTMLButtonElement;
   const popUpReviewButton = document.querySelector(
-    ".ui_v5-button-component.ui_v5-button-primary.ui_v5-button-large.ui_v5-button-full.game-over-review-button-background"
+    ".ui_v5-button-component.ui_v5-button-primary.ui_v5-button-large.ui_v5-button-full.game-over-review-button-background",
   ) as HTMLButtonElement;
 
-  if (gameReviewButton && !(gameReviewButton.textContent?.includes("Lichess"))) {
+  if (gameReviewButton && !gameReviewButton.textContent?.includes("Lichess")) {
     disableButton(gameReviewButton);
     setTimeout(() => {
       hijackButton(gameReviewButton);
@@ -115,11 +116,10 @@ const gameEndObserver = new MutationObserver((mutations, observer) => {
     setTimeout(() => {
       hijackButton(popUpReviewButton);
     }, 0);
-
   }
 
   if (gameReviewButton?.textContent?.includes("Lichess") && popUpReviewButton) {
-      stopObs = true;
+    stopObs = true;
     ready = true;
   }
 });
@@ -127,7 +127,7 @@ const gameEndObserver = new MutationObserver((mutations, observer) => {
 const lichess = (def = true) => {
   const shareButton = def
     ? (document.querySelector(
-        ".icon-font-chess.share.live-game-buttons-button"
+        ".icon-font-chess.share.live-game-buttons-button",
       ) as HTMLElement)
     : (document.querySelector('button[aria-label="Share"]') as HTMLElement);
 
@@ -140,20 +140,32 @@ const lichess = (def = true) => {
 
     const checkPGN = () => {
       const PGNElement = document.querySelector(
-        ".share-menu-tab-pgn-textarea"
+        ".share-menu-tab-pgn-textarea",
       ) as HTMLTextAreaElement;
       if (PGNElement) {
         const closeButton = document.querySelector(
-          "div.icon-font-chess.x.ui_outside-close-icon"
+          "div.icon-font-chess.x.ui_outside-close-icon",
         ) as HTMLElement;
         const black =
           document.getElementsByClassName("board flipped").length > 0;
-        let move = 
-          (document.getElementsByClassName("vertical-move-list")[0]?.getElementsByClassName("selected")[0] as HTMLElement)?.dataset.ply;
-        if(!move) {
-          const moveData = (document.querySelector("wc-horizontal-move-list")?.querySelector('[class*="node-highlight-content"][class*="selected"]')?.parentElement as HTMLElement)?.dataset.node?.split('-');
-          
-          move = moveData && moveData[0] === '0' ? String(parseInt(moveData[1], 10) + 1) : '0';
+        let move = (
+          document
+            .getElementsByClassName("vertical-move-list")[0]
+            ?.getElementsByClassName("selected")[0] as HTMLElement
+        )?.dataset.ply;
+        if (!move) {
+          const moveData = (
+            document
+              .querySelector("wc-horizontal-move-list")
+              ?.querySelector(
+                '[class*="node-highlight-content"][class*="selected"]',
+              )?.parentElement as HTMLElement
+          )?.dataset.node?.split("-");
+
+          move =
+            moveData && moveData[0] === "0"
+              ? String(parseInt(moveData[1], 10) + 1)
+              : "0";
         }
         closeButton?.click();
         try {
@@ -161,7 +173,8 @@ const lichess = (def = true) => {
           const link =
             `https://lichess.org/analysis/pgn/` +
             formatted +
-            (black ? "?color=black" : "") + `#${move}`;
+            (black ? "?color=black" : "") +
+            `#${move}`;
           window.open(link, "_blank")?.focus();
         } catch (error) {
           isLichessInProgress = false;
@@ -189,13 +202,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ success: true });
   } else if (msg.type === "events") {
     const button = document.querySelector(
-      'button[aria-label="Share"]'
+      'button[aria-label="Share"]',
     ) as HTMLElement;
     if (button) {
       lichess(false);
     } else {
       alert(
-        "Error: PGN not found. Try again in a moment if you believe this is an error"
+        "Error: PGN not found. Try again in a moment if you believe this is an error",
       );
     }
   }
