@@ -120,16 +120,19 @@ const lichess = (def = true) => {
     setTimeout(() => {
         shareButton.click();
         const checkPGN = () => {
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             const PGNElement = document.querySelector(".share-menu-tab-pgn-textarea");
             if (PGNElement) {
                 const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
                 const black = document.getElementsByClassName("board flipped").length > 0;
-                let move = (_b = (_a = document
-                    .getElementsByClassName("vertical-move-list")[0]) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.dataset.ply;
+                const moveData = (_d = (_c = (_b = (_a = document
+                    .querySelector("wc-new-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
+                let move = moveData && moveData[0] === "0"
+                    ? String(parseInt(moveData[1], 10) + 1)
+                    : null;
                 if (!move) {
-                    const moveData = (_f = (_e = (_d = (_c = document
-                        .querySelector("wc-horizontal-move-list")) === null || _c === void 0 ? void 0 : _c.querySelector('[class*="node-highlight-content"][class*="selected"]')) === null || _d === void 0 ? void 0 : _d.parentElement) === null || _e === void 0 ? void 0 : _e.dataset.node) === null || _f === void 0 ? void 0 : _f.split("-");
+                    const moveData = (_h = (_g = (_f = (_e = document
+                        .querySelector("wc-vertical-move-list")) === null || _e === void 0 ? void 0 : _e.getElementsByClassName("selected")[0]) === null || _f === void 0 ? void 0 : _f.parentElement) === null || _g === void 0 ? void 0 : _g.dataset.node) === null || _h === void 0 ? void 0 : _h.split("-");
                     move =
                         moveData && moveData[0] === "0"
                             ? String(parseInt(moveData[1], 10) + 1)
@@ -142,7 +145,7 @@ const lichess = (def = true) => {
                         formatted +
                         (black ? "?color=black" : "") +
                         `#${move}`;
-                    (_g = window.open(link, "_blank")) === null || _g === void 0 ? void 0 : _g.focus();
+                    (_j = window.open(link, "_blank")) === null || _j === void 0 ? void 0 : _j.focus();
                 }
                 catch (error) {
                     isLichessInProgress = false;

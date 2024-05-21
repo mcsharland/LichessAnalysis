@@ -148,20 +148,24 @@ const lichess = (def = true) => {
         ) as HTMLElement;
         const black =
           document.getElementsByClassName("board flipped").length > 0;
-        let move = (
+        const moveData = (
           document
-            .getElementsByClassName("vertical-move-list")[0]
-            ?.getElementsByClassName("selected")[0] as HTMLElement
-        )?.dataset.ply;
+            .querySelector("wc-new-move-list")
+            ?.getElementsByClassName("selected")[0]
+            ?.parentElement as HTMLElement
+        )?.dataset.node?.split("-");
+        let move =
+          moveData && moveData[0] === "0"
+            ? String(parseInt(moveData[1], 10) + 1)
+            : null;
+
         if (!move) {
           const moveData = (
             document
-              .querySelector("wc-horizontal-move-list")
-              ?.querySelector(
-                '[class*="node-highlight-content"][class*="selected"]',
-              )?.parentElement as HTMLElement
+              .querySelector("wc-vertical-move-list")
+              ?.getElementsByClassName("selected")[0]
+              ?.parentElement as HTMLElement
           )?.dataset.node?.split("-");
-
           move =
             moveData && moveData[0] === "0"
               ? String(parseInt(moveData[1], 10) + 1)
