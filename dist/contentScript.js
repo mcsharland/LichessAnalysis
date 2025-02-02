@@ -1,10 +1,26 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
 var __webpack_exports__ = {};
 /*!******************************!*\
   !*** ./src/contentScript.ts ***!
   \******************************/
-
+__webpack_require__.r(__webpack_exports__);
 const parser = (pgn) => {
     const removeParentheses = (str) => {
         let result = "";
@@ -38,9 +54,159 @@ const disableButton = (button) => {
         button.disabled = true;
     }
 };
-// maybe not needed but these ensure theres no unintended behavior
-let isLichessInProgress = false;
-let ready = false;
+// // maybe not needed but these ensure theres no unintended behavior
+// let isLichessInProgress = false;
+// let ready = false;
+// const hijackButton = (button: HTMLButtonElement) => {
+//   if (button) {
+//     const clonedButton = button.cloneNode(true) as HTMLButtonElement;
+//     button.parentNode?.replaceChild(clonedButton, button);
+//     clonedButton.addEventListener("click", (event) => {
+//       event.preventDefault();
+//       if (!isLichessInProgress) {
+//         isLichessInProgress = true;
+//         lichess();
+//       }
+//     });
+//     clonedButton.disabled = false;
+//     if (clonedButton.classList.contains("game-review-buttons-button")) {
+//       clonedButton.innerHTML =
+//         '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+//     } else if (
+//       clonedButton.classList.contains("game-over-review-button-background")
+//     ) {
+//       const parent = clonedButton.parentElement;
+//       const label = parent?.querySelector(".game-over-review-button-label");
+//       if (label) {
+//         label.textContent = "Lichess Analysis";
+//         const observer = new MutationObserver((mutations) => {
+//           mutations.forEach((mutation) => {
+//             if (
+//               mutation.type === "childList" ||
+//               mutation.type === "characterData"
+//             ) {
+//               const currentText = label.textContent;
+//               if (currentText !== "Lichess Analysis") {
+//                 label.textContent = "Lichess Analysis";
+//               }
+//             }
+//           });
+//         });
+//         observer.observe(label, {
+//           childList: true,
+//           characterData: true,
+//           subtree: true,
+//         });
+//       }
+//     }
+//   } else {
+//     throw new Error("button not found");
+//   }
+// };
+// let stopObs = false;
+// const gameEndObserver = new MutationObserver((mutations, observer) => {
+//   const gameReviewButton = document.querySelector(
+//     ".cc-button-component.cc-button.primary.cc-button-large.cc-button-full",
+//   ) as HTMLButtonElement;
+//   const popUpReviewButton = document.querySelector(
+//     ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background",
+//   ) as HTMLButtonElement;
+//   if (gameReviewButton && !gameReviewButton.textContent?.includes("Lichess")) {
+//     disableButton(gameReviewButton);
+//     setTimeout(() => {
+//       hijackButton(gameReviewButton);
+//     }, 0);
+//   }
+//   if (popUpReviewButton && !stopObs) {
+//     disableButton(popUpReviewButton);
+//     setTimeout(() => {
+//       hijackButton(popUpReviewButton);
+//     }, 0);
+//   }
+//   // if (gameReviewButton?.textContent?.includes("Lichess") && popUpReviewButton) {
+//   //   stopObs = true;
+//   //   ready = true;
+//   // }
+//   if (popUpReviewButton) {
+//     // Temporary until new system fleshed out
+//     stopObs = true;
+//     ready = true;
+//   }
+// });
+// const lichess = (def = true) => {
+//   const shareButton = def
+//     ? (document.querySelector(
+//         ".icon-font-chess.share.live-game-buttons-button",
+//       ) as HTMLElement)
+//     : (document.querySelector('button[aria-label="Share"]') as HTMLElement);
+//   if (!shareButton) {
+//     alert("Error: Unable to find PGN...");
+//     return;
+//   }
+//   setTimeout(() => {
+//     shareButton.click();
+//     const checkPGN = () => {
+//       const PGNElement = document.querySelector(
+//         ".share-menu-tab-image-component.share-menu-tab",
+//       ) as HTMLTextAreaElement;
+//       if (PGNElement) {
+//         const closeButton = document.querySelector(
+//           "div.icon-font-chess.x.ui_outside-close-icon",
+//         ) as HTMLElement;
+//         const black =
+//           document.getElementsByClassName("board flipped").length > 0;
+//         const moveData = (
+//           document
+//             .querySelector("wc-simple-move-list")
+//             ?.getElementsByClassName("selected")[0]
+//             ?.parentElement as HTMLElement
+//         )?.dataset.node?.split("-");
+//         let move =
+//           moveData && moveData[0] === "0"
+//             ? String(parseInt(moveData[1], 10) + 1)
+//             : null;
+//         if (!move) {
+//           const moveData = (
+//             document
+//               .querySelector("wc-vertical-move-list")
+//               ?.getElementsByClassName("selected")[0]
+//               ?.parentElement as HTMLElement
+//           )?.dataset.node?.split("-");
+//           move =
+//             moveData && moveData[0] === "0"
+//               ? String(parseInt(moveData[1], 10) + 1)
+//               : "0";
+//         }
+//         closeButton?.click();
+//         try {
+//           const PGNData = PGNElement.getAttribute("pgn");
+//           if (!PGNData) {
+//             throw new Error("PGN not found");
+//           }
+//           const formatted = parser(PGNData);
+//           const link =
+//             `https://lichess.org/analysis/pgn/` +
+//             formatted +
+//             (black ? "?color=black" : "") +
+//             `#${move}`;
+//           window.open(link, "_blank")?.focus();
+//         } catch (error) {
+//           isLichessInProgress = false;
+//           alert("Error: Something went wrong...");
+//           throw new Error("Couldn't open new page");
+//         }
+//       } else {
+//         setTimeout(checkPGN, 100);
+//       }
+//     };
+//     checkPGN();
+//   }, 100);
+//   isLichessInProgress = false;
+// };
+// gameEndObserver.observe(
+//   document.body,
+//   { childList: true, subtree: true },
+// );
 const hijackButton = (button) => {
     var _a;
     if (button) {
@@ -48,37 +214,39 @@ const hijackButton = (button) => {
         (_a = button.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(clonedButton, button);
         clonedButton.addEventListener("click", (event) => {
             event.preventDefault();
-            if (!isLichessInProgress) {
-                isLichessInProgress = true;
-                lichess();
-            }
+            // if (!isLichessInProgress) {
+            //   isLichessInProgress = true;
+            lichess();
+            // }
         });
         clonedButton.disabled = false;
-        if (clonedButton.classList.contains("game-review-buttons-button")) {
+        if (clonedButton.classList.contains("cc-button-large")) {
             clonedButton.innerHTML =
-                '<span aria-hidden="true" class="ui_v5-button-icon icon-font-chess best"></span> <span>Lichess</span>';
+                '<span aria-hidden="true" class="icon-font-chess best cc-icon-medium cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
         }
         else if (clonedButton.classList.contains("game-over-review-button-background")) {
             const parent = clonedButton.parentElement;
             const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
             if (label) {
                 label.textContent = "Lichess Analysis";
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        if (mutation.type === "childList" ||
-                            mutation.type === "characterData") {
-                            const currentText = label.textContent;
-                            if (currentText !== "Lichess Analysis") {
-                                label.textContent = "Lichess Analysis";
-                            }
-                        }
-                    });
-                });
-                observer.observe(label, {
-                    childList: true,
-                    characterData: true,
-                    subtree: true,
-                });
+                // const observer = new MutationObserver((mutations) => {
+                //   mutations.forEach((mutation) => {
+                //     if (
+                //       mutation.type === "childList" ||
+                //       mutation.type === "characterData"
+                //     ) {
+                //       const currentText = label.textContent;
+                //       if (currentText !== "Lichess Analysis") {
+                //         label.textContent = "Lichess Analysis";
+                //       }
+                //     }
+                //   });
+                // });
+                // observer.observe(label, {
+                //   childList: true,
+                //   characterData: true,
+                //   subtree: true,
+                // });
             }
         }
     }
@@ -86,100 +254,136 @@ const hijackButton = (button) => {
         throw new Error("button not found");
     }
 };
-// I am not proud of this but it was annoying to fix and this works
-let stopObs = false;
-const gameEndObserver = new MutationObserver((mutations, observer) => {
-    var _a, _b;
-    const gameReviewButton = document.querySelector(".game-review-buttons-component .game-review-buttons-review .ui_v5-button-component.ui_v5-button-primary.game-review-buttons-button");
-    const popUpReviewButton = document.querySelector(".ui_v5-button-component.ui_v5-button-primary.ui_v5-button-large.ui_v5-button-full.game-over-review-button-background");
-    if (gameReviewButton && !((_a = gameReviewButton.textContent) === null || _a === void 0 ? void 0 : _a.includes("Lichess"))) {
-        disableButton(gameReviewButton);
-        setTimeout(() => {
-            hijackButton(gameReviewButton);
-        }, 0);
-    }
-    if (popUpReviewButton && !stopObs) {
-        disableButton(popUpReviewButton);
-        setTimeout(() => {
-            hijackButton(popUpReviewButton);
-        }, 0);
-    }
-    if (((_b = gameReviewButton === null || gameReviewButton === void 0 ? void 0 : gameReviewButton.textContent) === null || _b === void 0 ? void 0 : _b.includes("Lichess")) && popUpReviewButton) {
-        stopObs = true;
-        ready = true;
-    }
-});
-const lichess = (def = true) => {
-    const shareButton = def
-        ? document.querySelector(".icon-font-chess.share.live-game-buttons-button")
-        : document.querySelector('button[aria-label="Share"]');
+function handleButton(button) {
+    disableButton(button);
+    hijackButton(button);
+}
+function lichess() {
+    const shareButton = document.querySelector(".icon-font-chess.share.live-game-buttons-button");
     if (!shareButton) {
         alert("Error: Unable to find PGN...");
         return;
     }
-    setTimeout(() => {
-        shareButton.click();
-        const checkPGN = () => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            const PGNElement = document.querySelector(".share-menu-tab-pgn-textarea");
-            if (PGNElement) {
-                const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
-                const black = document.getElementsByClassName("board flipped").length > 0;
-                const moveData = (_d = (_c = (_b = (_a = document
-                    .querySelector("wc-new-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
-                let move = moveData && moveData[0] === "0"
-                    ? String(parseInt(moveData[1], 10) + 1)
-                    : null;
-                if (!move) {
-                    const moveData = (_h = (_g = (_f = (_e = document
-                        .querySelector("wc-vertical-move-list")) === null || _e === void 0 ? void 0 : _e.getElementsByClassName("selected")[0]) === null || _f === void 0 ? void 0 : _f.parentElement) === null || _g === void 0 ? void 0 : _g.dataset.node) === null || _h === void 0 ? void 0 : _h.split("-");
-                    move =
-                        moveData && moveData[0] === "0"
-                            ? String(parseInt(moveData[1], 10) + 1)
-                            : "0";
-                }
-                closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
-                try {
-                    const formatted = parser(PGNElement.value);
-                    const link = `https://lichess.org/analysis/pgn/` +
-                        formatted +
-                        (black ? "?color=black" : "") +
-                        `#${move}`;
-                    (_j = window.open(link, "_blank")) === null || _j === void 0 ? void 0 : _j.focus();
-                }
-                catch (error) {
-                    isLichessInProgress = false;
-                    alert("Error: Something went wrong...");
-                    throw new Error("Couldn't open new page");
-                }
+    console.log("Share button found!");
+    const pgnObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach((node) => {
+                    var _a, _b, _c, _d, _e;
+                    if (node instanceof HTMLElement) {
+                        const PGNElement = node.querySelector(`.share-menu-tab-image-component.share-menu-tab`);
+                        if (PGNElement) {
+                            console.log("PGN found!");
+                            pgnObserver.disconnect();
+                            const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
+                            const black = document.getElementsByClassName("board flipped").length > 0;
+                            const moveData = (_d = (_c = (_b = (_a = document
+                                .querySelector("wc-simple-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
+                            let move = moveData && moveData[0] === "0"
+                                ? String(parseInt(moveData[1], 10) + 1)
+                                : null;
+                            closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
+                            try {
+                                console.log("Attemping to open lichess!");
+                                const PGNData = PGNElement.getAttribute("pgn");
+                                if (!PGNData) {
+                                    throw new Error("PGN not found");
+                                }
+                                const formatted = parser(PGNData);
+                                const link = `https://lichess.org/analysis/pgn/` +
+                                    formatted +
+                                    (black ? "?color=black" : "") +
+                                    `#${move}`;
+                                (_e = window.open(link, "_blank")) === null || _e === void 0 ? void 0 : _e.focus();
+                            }
+                            catch (error) {
+                                alert("Error: Something went wrong...");
+                                throw new Error("Couldn't open new page");
+                            }
+                        }
+                    }
+                });
             }
-            else {
-                setTimeout(checkPGN, 100);
-            }
-        };
-        checkPGN();
-    }, 100);
-    isLichessInProgress = false;
-};
-gameEndObserver.observe(document.body, { childList: true, subtree: true });
+        });
+    });
+    shareButton.click();
+    pgnObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+}
+(function () {
+    if (!window.gameEndObserver) {
+        initializeObserver();
+    }
+    const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+    console.log(sideBarButton);
+    if (sideBarButton instanceof HTMLButtonElement) {
+        handleButton(sideBarButton);
+    }
+    function initializeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "childList") {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node instanceof HTMLElement) {
+                            const gameReviewButton = node.querySelector(".game-over-review-button-component");
+                            if (gameReviewButton) {
+                                const popUpButton = gameReviewButton.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
+                                const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                                if (popUpButton instanceof HTMLButtonElement &&
+                                    sideBarButton instanceof HTMLButtonElement) {
+                                    handleButton(popUpButton);
+                                    handleButton(sideBarButton);
+                                }
+                            }
+                        }
+                    });
+                }
+                if (mutation.type === "attributes" &&
+                    mutation.target instanceof HTMLElement &&
+                    mutation.target.classList.contains("game-over-review-button-component")) {
+                    const popUpButton = mutation.target.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
+                    if (popUpButton instanceof HTMLButtonElement) {
+                        handleButton(popUpButton);
+                    }
+                    // Do the sidebar again just in case
+                    const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                    if (sideBarButton instanceof HTMLButtonElement) {
+                        handleButton(sideBarButton);
+                    }
+                }
+            });
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+        });
+        window.gameEndObserver = observer;
+    }
+})();
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "live") {
-        if (ready) {
-            lichess();
-        }
+        lichess();
         sendResponse({ success: true });
     }
     else if (msg.type === "events") {
-        const button = document.querySelector('button[aria-label="Share"]');
-        if (button) {
-            lichess(false);
-        }
-        else {
-            alert("Error: PGN not found. Try again in a moment if you believe this is an error");
-        }
+        alert("Feature currently disabled");
+        //   const button = document.querySelector(
+        //     'button[aria-label="Share"]',
+        //   ) as HTMLElement;
+        //   if (button) {
+        //     // lichess();
+        //   } else {
+        //     alert(
+        //       "Error: PGN not found. Try again in a moment if you believe this is an error",
+        //     );
+        //   }
     }
     return true;
 });
+
 
 /******/ })()
 ;
