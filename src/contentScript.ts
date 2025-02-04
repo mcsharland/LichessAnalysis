@@ -153,13 +153,13 @@ function lichess() {
     initializeObserver();
   }
 
+  // Check for opening finished game
   function checkSideButton() {
     const sideBarButton = document.querySelector(
       `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
     ) as HTMLButtonElement;
     if (sideBarButton) {
-      disableButton(sideBarButton);
-      hijackButton(sideBarButton);
+      handleButton(sideBarButton);
       return;
     }
     requestAnimationFrame(checkSideButton);
@@ -179,9 +179,16 @@ function lichess() {
               if (gameReviewButton) {
                 const popUpButton = gameReviewButton.querySelector(
                   ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background",
-                );
-                if (popUpButton instanceof HTMLButtonElement) {
+                ) as HTMLButtonElement;
+                if (popUpButton) {
                   handleButton(popUpButton);
+                }
+                // Additional check for when game ends
+                const sideBarButton = document.querySelector(
+                  `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
+                ) as HTMLButtonElement;
+                if (sideBarButton) {
+                  handleButton(sideBarButton);
                 }
               }
             }
@@ -197,9 +204,16 @@ function lichess() {
         ) {
           const popUpButton = mutation.target.querySelector(
             ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background",
-          );
-          if (popUpButton instanceof HTMLButtonElement) {
+          ) as HTMLButtonElement;
+          if (popUpButton) {
             handleButton(popUpButton);
+          }
+          // Additional check for when game ends
+          const sideBarButton = document.querySelector(
+            `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
+          ) as HTMLButtonElement;
+          if (sideBarButton) {
+            handleButton(sideBarButton);
           }
         }
       });

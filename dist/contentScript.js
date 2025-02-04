@@ -139,11 +139,11 @@ function lichess() {
     if (!window.gameEndObserver) {
         initializeObserver();
     }
+    // Check for opening finished game
     function checkSideButton() {
         const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
         if (sideBarButton) {
-            disableButton(sideBarButton);
-            hijackButton(sideBarButton);
+            handleButton(sideBarButton);
             return;
         }
         requestAnimationFrame(checkSideButton);
@@ -159,15 +159,14 @@ function lichess() {
                             const gameReviewButton = node.querySelector(".game-over-review-button-component");
                             if (gameReviewButton) {
                                 const popUpButton = gameReviewButton.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
-                                if (popUpButton instanceof HTMLButtonElement) {
+                                if (popUpButton) {
                                     handleButton(popUpButton);
                                 }
-                                // const sideBarButton = document.querySelector(
-                                //   `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
-                                // );
-                                // if (sideBarButton instanceof HTMLButtonElement) {
-                                //   handleButton(sideBarButton);
-                                // }
+                                // Additional check for when game ends
+                                const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                                if (sideBarButton) {
+                                    handleButton(sideBarButton);
+                                }
                             }
                         }
                     });
@@ -176,16 +175,14 @@ function lichess() {
                     mutation.target instanceof HTMLElement &&
                     mutation.target.classList.contains("game-over-review-button-component")) {
                     const popUpButton = mutation.target.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
-                    if (popUpButton instanceof HTMLButtonElement) {
+                    if (popUpButton) {
                         handleButton(popUpButton);
                     }
-                    // Do the sidebar again just in case
-                    // const sideBarButton = document.querySelector(
-                    //   `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
-                    // );
-                    // if (sideBarButton instanceof HTMLButtonElement) {
-                    //   handleButton(sideBarButton);
-                    // }
+                    // Additional check for when game ends
+                    const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                    if (sideBarButton) {
+                        handleButton(sideBarButton);
+                    }
                 }
             });
         });
