@@ -5,7 +5,7 @@
   "description": "Imports games from chess.com to a lichess analysis board",
   "content_scripts": [
     {
-      "matches": ["https://www.chess.com/*"],
+      "matches": ["https://www.chess.com/game/*"],
       "js": ["dist/contentScript.js"]
     }
   ],
