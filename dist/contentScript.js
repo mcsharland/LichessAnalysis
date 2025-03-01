@@ -99,7 +99,7 @@ function lichess() {
                         const PGNElement = node.querySelector(`.share-menu-tab-image-component.share-menu-tab`);
                         if (PGNElement) {
                             pgnObserver.disconnect();
-                            const closeButton = document.querySelector("div.icon-font-chess.x.ui_outside-close-icon");
+                            const closeButton = node.querySelector(".outside-close-component");
                             const black = document.getElementsByClassName("board flipped").length > 0;
                             const moveData = (_d = (_c = (_b = (_a = document
                                 .querySelector("wc-simple-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
@@ -136,9 +136,26 @@ function lichess() {
     });
 }
 (function () {
-    if (!window.gameEndObserver) {
-        initializeObserver();
+    const targetUrls = ["https://www.chess.com/game/"];
+    function handlePageLoad() {
+        const currentUrl = window.location.href;
+        const isTargetPage = targetUrls.some((url) => currentUrl.startsWith(url));
+        if (isTargetPage) {
+            if (!window.gameEndObserver) {
+                initializeObserver();
+            }
+            requestAnimationFrame(checkSideButton);
+        }
+        else {
+            if (window.gameEndObserver) {
+                window.gameEndObserver.disconnect();
+                window.gameEndObserver = null;
+            }
+        }
     }
+    // @ts-ignore
+    window.navigation.addEventListener("currententrychange", handlePageLoad);
+    handlePageLoad();
     // Check for opening finished game
     function checkSideButton() {
         const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
@@ -148,7 +165,6 @@ function lichess() {
         }
         requestAnimationFrame(checkSideButton);
     }
-    requestAnimationFrame(checkSideButton);
     function initializeObserver() {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {

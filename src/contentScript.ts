@@ -98,9 +98,9 @@ function lichess() {
             );
             if (PGNElement) {
               pgnObserver.disconnect();
-              const closeButton = document.querySelector(
-                "div.icon-font-chess.x.ui_outside-close-icon",
-              ) as HTMLElement;
+              const closeButton = node.querySelector(
+                ".outside-close-component",
+              ) as HTMLButtonElement;
 
               const black =
                 document.getElementsByClassName("board flipped").length > 0;
@@ -149,9 +149,29 @@ function lichess() {
 }
 
 (function () {
-  if (!window.gameEndObserver) {
-    initializeObserver();
+  const targetUrls = ["https://www.chess.com/game/"];
+
+  function handlePageLoad() {
+    const currentUrl = window.location.href;
+    const isTargetPage = targetUrls.some((url) => currentUrl.startsWith(url));
+
+    if (isTargetPage) {
+      if (!window.gameEndObserver) {
+        initializeObserver();
+      }
+      requestAnimationFrame(checkSideButton);
+    } else {
+      if (window.gameEndObserver) {
+        window.gameEndObserver.disconnect();
+        window.gameEndObserver = null;
+      }
+    }
   }
+
+  // @ts-ignore
+  window.navigation.addEventListener("currententrychange", handlePageLoad);
+
+  handlePageLoad();
 
   // Check for opening finished game
   function checkSideButton() {
@@ -164,7 +184,6 @@ function lichess() {
     }
     requestAnimationFrame(checkSideButton);
   }
-  requestAnimationFrame(checkSideButton);
 
   function initializeObserver() {
     const observer = new MutationObserver((mutations) => {
