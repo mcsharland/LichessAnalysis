@@ -10,12 +10,9 @@ A chrome extension to import chess.com games to lichess analysis board. Override
 # Usage
 
 Literally just click the review button and it will take you a lichess analysis board. Thats about it.
-It should also work with games in the events tab if you click the button in the extensions popup, though this hasn't been tested thoroughly.
+~~Also will work with games in the events tab if you click the button in the extensions popup.~~ *This is not currently working as there are no interesting events going on at the moment and I can't be bothered with maintaining it.*
 Sadly this extension will not work with games from non-standard starting positions, such as chess 960 or record alternate lines played on the board.
 
 # Extras
-
-Developed in the arc browser<br />
-Join with [my link](https://arc.net/gift/437e68d4) to help me get icons or something
 
 This extension will break as chess.com changes their page layout, and I will update it sporadically as I feel like it.
