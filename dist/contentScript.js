@@ -64,19 +64,21 @@ const hijackButton = (button) => {
             lichess();
         });
         clonedButton.disabled = false;
-        if (clonedButton.classList.contains("cc-button-large")) {
-            clonedButton.innerHTML =
-                '<span aria-hidden="true" class="icon-font-chess best cc-icon-medium cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
-        }
-        else if (clonedButton.classList.contains("game-over-review-button-background")) {
+        if (clonedButton.classList.contains("game-over-review-button-background")) {
             const parent = clonedButton.parentElement;
             const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
             if (label) {
                 label.textContent = "Lichess Analysis";
             }
+            // warning first button also contains this class, no guaranteed unique classes
+        }
+        else if (clonedButton.classList.contains("cc-button-full")) {
+            clonedButton.innerHTML =
+                '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
         }
     }
     else {
+        console.log("something wrong button not found!");
         throw new Error("button not found");
     }
 };
@@ -156,9 +158,11 @@ function lichess() {
     // @ts-ignore
     window.navigation.addEventListener("currententrychange", handlePageLoad);
     handlePageLoad();
+    const sideBarClass = ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
+    const popUpClass = ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background";
     // Check for opening finished game
     function checkSideButton() {
-        const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+        const sideBarButton = document.querySelector(sideBarClass);
         if (sideBarButton) {
             handleButton(sideBarButton);
             return;
@@ -174,13 +178,15 @@ function lichess() {
                         if (node instanceof HTMLElement) {
                             const gameReviewButton = node.querySelector(".game-over-review-button-component");
                             if (gameReviewButton) {
-                                const popUpButton = gameReviewButton.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
+                                const popUpButton = gameReviewButton.querySelector(popUpClass);
                                 if (popUpButton) {
+                                    console.log("Popup found 1!");
                                     handleButton(popUpButton);
                                 }
                                 // Additional check for when game ends
-                                const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                                const sideBarButton = document.querySelector(sideBarClass);
                                 if (sideBarButton) {
+                                    console.log("Sidebar found 1!");
                                     handleButton(sideBarButton);
                                 }
                             }
@@ -190,13 +196,15 @@ function lichess() {
                 if (mutation.type === "attributes" &&
                     mutation.target instanceof HTMLElement &&
                     mutation.target.classList.contains("game-over-review-button-component")) {
-                    const popUpButton = mutation.target.querySelector(".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background");
+                    const popUpButton = mutation.target.querySelector(popUpClass);
                     if (popUpButton) {
+                        console.log("Popup found!");
                         handleButton(popUpButton);
                     }
                     // Additional check for when game ends
-                    const sideBarButton = document.querySelector(`.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`);
+                    const sideBarButton = document.querySelector(sideBarClass);
                     if (sideBarButton) {
+                        console.log("Sidebar found 2!");
                         handleButton(sideBarButton);
                     }
                 }

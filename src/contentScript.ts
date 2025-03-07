@@ -54,21 +54,19 @@ const hijackButton = (button: HTMLButtonElement) => {
       lichess();
     });
     clonedButton.disabled = false;
-
-    if (clonedButton.classList.contains("cc-button-large")) {
-      clonedButton.innerHTML =
-        '<span aria-hidden="true" class="icon-font-chess best cc-icon-medium cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
-    } else if (
-      clonedButton.classList.contains("game-over-review-button-background")
-    ) {
+    if (clonedButton.classList.contains("game-over-review-button-background")) {
       const parent = clonedButton.parentElement;
       const label = parent?.querySelector(".game-over-review-button-label");
-
       if (label) {
         label.textContent = "Lichess Analysis";
       }
+      // warning first button also contains this class, no guaranteed unique classes
+    } else if (clonedButton.classList.contains("cc-button-full")) {
+      clonedButton.innerHTML =
+        '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
     }
   } else {
+    console.log("something wrong button not found!");
     throw new Error("button not found");
   }
 };
@@ -173,10 +171,15 @@ function lichess() {
 
   handlePageLoad();
 
+  const sideBarClass =
+    ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
+  const popUpClass =
+    ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background";
+
   // Check for opening finished game
   function checkSideButton() {
     const sideBarButton = document.querySelector(
-      `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
+      sideBarClass,
     ) as HTMLButtonElement;
     if (sideBarButton) {
       handleButton(sideBarButton);
@@ -197,16 +200,18 @@ function lichess() {
               );
               if (gameReviewButton) {
                 const popUpButton = gameReviewButton.querySelector(
-                  ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background",
+                  popUpClass,
                 ) as HTMLButtonElement;
                 if (popUpButton) {
+                  console.log("Popup found 1!");
                   handleButton(popUpButton);
                 }
                 // Additional check for when game ends
                 const sideBarButton = document.querySelector(
-                  `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
+                  sideBarClass,
                 ) as HTMLButtonElement;
                 if (sideBarButton) {
+                  console.log("Sidebar found 1!");
                   handleButton(sideBarButton);
                 }
               }
@@ -222,16 +227,18 @@ function lichess() {
           )
         ) {
           const popUpButton = mutation.target.querySelector(
-            ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background",
+            popUpClass,
           ) as HTMLButtonElement;
           if (popUpButton) {
+            console.log("Popup found!");
             handleButton(popUpButton);
           }
           // Additional check for when game ends
           const sideBarButton = document.querySelector(
-            `.cc-button-component.cc-button-primary.cc-button-large.cc-button-full`,
+            sideBarClass,
           ) as HTMLButtonElement;
           if (sideBarButton) {
+            console.log("Sidebar found 2!");
             handleButton(sideBarButton);
           }
         }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chess Analysis",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Imports games from chess.com to a lichess analysis board",
   "content_scripts": [
     {
