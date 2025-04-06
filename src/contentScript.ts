@@ -66,7 +66,6 @@ const hijackButton = (button: HTMLButtonElement) => {
         '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
     }
   } else {
-    console.log("something wrong button not found!");
     throw new Error("button not found");
   }
 };
@@ -97,7 +96,7 @@ function lichess() {
             if (PGNElement) {
               pgnObserver.disconnect();
               const closeButton = node.querySelector(
-                ".outside-close-component",
+                ".cc-modal-header-close",
               ) as HTMLButtonElement;
 
               const black =
@@ -203,7 +202,6 @@ function lichess() {
                   popUpClass,
                 ) as HTMLButtonElement;
                 if (popUpButton) {
-                  console.log("Popup found 1!");
                   handleButton(popUpButton);
                 }
                 // Additional check for when game ends
@@ -211,7 +209,6 @@ function lichess() {
                   sideBarClass,
                 ) as HTMLButtonElement;
                 if (sideBarButton) {
-                  console.log("Sidebar found 1!");
                   handleButton(sideBarButton);
                 }
               }
@@ -230,7 +227,6 @@ function lichess() {
             popUpClass,
           ) as HTMLButtonElement;
           if (popUpButton) {
-            console.log("Popup found!");
             handleButton(popUpButton);
           }
           // Additional check for when game ends
@@ -238,7 +234,6 @@ function lichess() {
             sideBarClass,
           ) as HTMLButtonElement;
           if (sideBarButton) {
-            console.log("Sidebar found 2!");
             handleButton(sideBarButton);
           }
         }

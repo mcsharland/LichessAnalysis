@@ -78,7 +78,6 @@ const hijackButton = (button) => {
         }
     }
     else {
-        console.log("something wrong button not found!");
         throw new Error("button not found");
     }
 };
@@ -101,7 +100,7 @@ function lichess() {
                         const PGNElement = node.querySelector(`.share-menu-tab-image-component.share-menu-tab`);
                         if (PGNElement) {
                             pgnObserver.disconnect();
-                            const closeButton = node.querySelector(".outside-close-component");
+                            const closeButton = node.querySelector(".cc-modal-header-close");
                             const black = document.getElementsByClassName("board flipped").length > 0;
                             const moveData = (_d = (_c = (_b = (_a = document
                                 .querySelector("wc-simple-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
@@ -180,13 +179,11 @@ function lichess() {
                             if (gameReviewButton) {
                                 const popUpButton = gameReviewButton.querySelector(popUpClass);
                                 if (popUpButton) {
-                                    console.log("Popup found 1!");
                                     handleButton(popUpButton);
                                 }
                                 // Additional check for when game ends
                                 const sideBarButton = document.querySelector(sideBarClass);
                                 if (sideBarButton) {
-                                    console.log("Sidebar found 1!");
                                     handleButton(sideBarButton);
                                 }
                             }
@@ -198,13 +195,11 @@ function lichess() {
                     mutation.target.classList.contains("game-over-review-button-component")) {
                     const popUpButton = mutation.target.querySelector(popUpClass);
                     if (popUpButton) {
-                        console.log("Popup found!");
                         handleButton(popUpButton);
                     }
                     // Additional check for when game ends
                     const sideBarButton = document.querySelector(sideBarClass);
                     if (sideBarButton) {
-                        console.log("Sidebar found 2!");
                         handleButton(sideBarButton);
                     }
                 }
