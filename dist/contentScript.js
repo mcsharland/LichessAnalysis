@@ -55,30 +55,28 @@ const disableButton = (button) => {
     }
 };
 const hijackButton = (button) => {
-    var _a;
-    if (button) {
-        const clonedButton = button.cloneNode(true);
-        (_a = button.parentNode) === null || _a === void 0 ? void 0 : _a.replaceChild(clonedButton, button);
-        clonedButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            lichess();
-        });
-        clonedButton.disabled = false;
-        if (clonedButton.classList.contains("game-over-review-button-background")) {
-            const parent = clonedButton.parentElement;
-            const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
-            if (label) {
-                label.textContent = "Lichess Analysis";
-            }
-            // warning first button also contains this class, no guaranteed unique classes
-        }
-        else if (clonedButton.classList.contains("cc-button-full")) {
-            clonedButton.innerHTML =
-                '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
-        }
-    }
-    else {
+    if (button == null) {
+        console.error("Null button");
         throw new Error("button not found");
+    }
+    button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        lichess();
+        return false;
+    }, true);
+    button.disabled = false;
+    if (button.getAttribute("aria-label") === "Game Review") {
+        const parent = button.parentElement;
+        const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
+        if (label) {
+            label.textContent = "Lichess Analysis";
+        }
+        // warning first button also contains this class, no guaranteed unique classes
+    }
+    else if (button.classList.contains("cc-button-full")) {
+        button.innerHTML =
+            '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
     }
 };
 function handleButton(button) {
@@ -86,7 +84,7 @@ function handleButton(button) {
     hijackButton(button);
 }
 function lichess() {
-    const shareButton = document.querySelector(".icon-font-chess.share.live-game-buttons-button");
+    const shareButton = document.querySelector(`button[aria-label="Share"]`);
     if (!shareButton) {
         alert("Error: Unable to find PGN...");
         return;
@@ -97,10 +95,10 @@ function lichess() {
                 mutation.addedNodes.forEach((node) => {
                     var _a, _b, _c, _d, _e;
                     if (node instanceof HTMLElement) {
-                        const PGNElement = node.querySelector(`.share-menu-tab-image-component.share-menu-tab`);
+                        const PGNElement = node.querySelector(`[pgn]`);
                         if (PGNElement) {
                             pgnObserver.disconnect();
-                            const closeButton = node.querySelector(".cc-modal-header-close");
+                            const closeButton = node.querySelector(`button[aria-label="Close"]`);
                             const black = document.getElementsByClassName("board flipped").length > 0;
                             const moveData = (_d = (_c = (_b = (_a = document
                                 .querySelector("wc-simple-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
@@ -136,12 +134,13 @@ function lichess() {
         subtree: true,
     });
 }
+function isLiveGame() {
+    return (window.location.hostname.includes(`chess.com`) &&
+        window.location.pathname.startsWith(`/game/`));
+}
 (function () {
-    const targetUrls = ["https://www.chess.com/game/"];
     function handlePageLoad() {
-        const currentUrl = window.location.href;
-        const isTargetPage = targetUrls.some((url) => currentUrl.startsWith(url));
-        if (isTargetPage) {
+        if (isLiveGame()) {
             if (!window.gameEndObserver) {
                 initializeObserver();
             }
@@ -157,11 +156,11 @@ function lichess() {
     // @ts-ignore
     window.navigation.addEventListener("currententrychange", handlePageLoad);
     handlePageLoad();
-    const sideBarClass = ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
-    const popUpClass = ".cc-button-component.cc-button-primary.cc-button-xx-large.cc-button-full.game-over-review-button-background";
+    const sideBarIdentifier = ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
+    const popUpIdentifier = `button[aria-label="Game Review"`;
     // Check for opening finished game
     function checkSideButton() {
-        const sideBarButton = document.querySelector(sideBarClass);
+        const sideBarButton = document.querySelector(sideBarIdentifier);
         if (sideBarButton) {
             handleButton(sideBarButton);
             return;
@@ -175,14 +174,11 @@ function lichess() {
                 if (mutation.type === "childList") {
                     mutation.addedNodes.forEach((node) => {
                         if (node instanceof HTMLElement) {
-                            const gameReviewButton = node.querySelector(".game-over-review-button-component");
-                            if (gameReviewButton) {
-                                const popUpButton = gameReviewButton.querySelector(popUpClass);
-                                if (popUpButton) {
-                                    handleButton(popUpButton);
-                                }
+                            const popUpButton = node.querySelector(`button[aria-label="Game Review"`);
+                            if (popUpButton) {
+                                handleButton(popUpButton);
                                 // Additional check for when game ends
-                                const sideBarButton = document.querySelector(sideBarClass);
+                                const sideBarButton = document.querySelector(sideBarIdentifier);
                                 if (sideBarButton) {
                                     handleButton(sideBarButton);
                                 }
@@ -191,16 +187,15 @@ function lichess() {
                     });
                 }
                 if (mutation.type === "attributes" &&
-                    mutation.target instanceof HTMLElement &&
-                    mutation.target.classList.contains("game-over-review-button-component")) {
-                    const popUpButton = mutation.target.querySelector(popUpClass);
+                    mutation.target instanceof HTMLElement) {
+                    const popUpButton = mutation.target.querySelector(popUpIdentifier);
                     if (popUpButton) {
                         handleButton(popUpButton);
-                    }
-                    // Additional check for when game ends
-                    const sideBarButton = document.querySelector(sideBarClass);
-                    if (sideBarButton) {
-                        handleButton(sideBarButton);
+                        // Additional check for when game ends
+                        const sideBarButton = document.querySelector(sideBarIdentifier);
+                        if (sideBarButton) {
+                            handleButton(sideBarButton);
+                        }
                     }
                 }
             });
@@ -217,19 +212,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "live") {
         lichess();
         sendResponse({ success: true });
-    }
-    else if (msg.type === "events") {
-        alert("Feature currently disabled");
-        //   const button = document.querySelector(
-        //     'button[aria-label="Share"]',
-        //   ) as HTMLElement;
-        //   if (button) {
-        //     // lichess();
-        //   } else {
-        //     alert(
-        //       "Error: PGN not found. Try again in a moment if you believe this is an error",
-        //     );
-        //   }
     }
     return true;
 });

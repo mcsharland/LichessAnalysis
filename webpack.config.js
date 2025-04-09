@@ -4,8 +4,8 @@ module.exports = {
   mode: "development",
   devtool: "source-map",
   entry: {
-    contentScript: './src/contentScript.ts',
-    popup: './src/popup.ts'
+    contentScript: "./src/contentScript.ts",
+    background: "./src/background.ts",
   },
   module: {
     rules: [
@@ -20,7 +20,7 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    filename: '[name].js',
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
 };

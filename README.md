@@ -16,3 +16,5 @@ Sadly this extension will not work with games from non-standard starting positio
 # Extras
 
 This extension will break as chess.com changes their page layout, and I will update it sporadically as I feel like it.
+
+The extension will not work on their proxy domains, simply because I don't use them and don't care to add support.
