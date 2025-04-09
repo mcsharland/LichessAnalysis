@@ -20,6 +20,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.action.onClicked.addListener(async (tab) => {
   try {
     if (tab?.id && tab?.url?.includes(`chess.com/game/`)) {
+      // Masked temporarily
       const response = await chrome.tabs.sendMessage(tab.id, { type: "live" });
     }
   } catch (e) {

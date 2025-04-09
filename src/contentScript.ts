@@ -46,7 +46,6 @@ const disableButton = (button: HTMLButtonElement) => {
 
 const hijackButton = (button: HTMLButtonElement) => {
   if (button == null) {
-    console.error("Null button");
     throw new Error("button not found");
   }
   button.addEventListener(
