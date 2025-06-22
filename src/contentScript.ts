@@ -1,3 +1,8 @@
+/*
+  Still references sidebar and popup as distinct buttons despite both now holding NodeLists
+  This can be refactored later, but for the time being serves as a reminder to the specific trigger
+  (I'm too lazy to change them now)
+*/
 declare global {
   interface Window {
     gameEndObserver?: MutationObserver | null;
@@ -38,13 +43,15 @@ const parser = (pgn: string) => {
     .replace(/#$/, ""); // remove a trailing '#' to ensure board flip works
 };
 
-const disableButton = (button: HTMLButtonElement) => {
+const disableButton = (button: HTMLAnchorElement) => {
   if (button) {
-    button.disabled = true;
+    button.style.pointerEvents = "none";
+    button.setAttribute("hijacked", "true");
+    button.removeAttribute("href");
   }
 };
 
-const hijackButton = (button: HTMLButtonElement) => {
+const hijackButton = (button: HTMLAnchorElement) => {
   if (button == null) {
     throw new Error("button not found");
   }
@@ -59,26 +66,33 @@ const hijackButton = (button: HTMLButtonElement) => {
     true,
   );
 
-  button.disabled = false;
-  if (button.getAttribute("aria-label") === "Game Review") {
-    const parent = button.parentElement;
-    const label = parent?.querySelector(".game-over-review-button-label");
-    if (label) {
-      label.textContent = "Lichess Analysis";
-    }
-    // warning first button also contains this class, no guaranteed unique classes
-  } else if (button.classList.contains("cc-button-full")) {
-    button.innerHTML =
-      '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
+  button.style.pointerEvents = ""; // reset
+
+  const sideBarLabel = button.querySelector(".cc-button-one-line");
+  if (sideBarLabel) {
+    sideBarLabel.textContent = "Lichess Analysis";
+  }
+
+  const prevSibling = button.previousElementSibling;
+  if (
+    prevSibling &&
+    prevSibling instanceof HTMLSpanElement &&
+    prevSibling.classList.contains("game-over-review-button-label")
+  ) {
+    prevSibling.textContent = "Lichess Analysis";
   }
 };
 
-function handleButton(button: HTMLButtonElement) {
+function handleButton(button: HTMLAnchorElement) {
+  if (button.getAttribute("hijacked") === "true") return;
+  if (!lichessAnalysisLink) createLichessLink();
   disableButton(button);
   hijackButton(button);
 }
 
-function lichess() {
+let lichessAnalysisLink: string | null = null;
+
+function createLichessLink() {
   const shareButton = document.querySelector(
     `button[aria-label="Share"]`,
   ) as HTMLElement;
@@ -115,22 +129,16 @@ function lichess() {
 
               closeButton?.click();
 
-              try {
-                const PGNData = PGNElement.getAttribute("pgn");
-                if (!PGNData) {
-                  throw new Error("PGN not found");
-                }
-                const formatted = parser(PGNData);
-                const link =
-                  `https://lichess.org/analysis/pgn/` +
-                  formatted +
-                  (black ? "?color=black" : "") +
-                  `#${move}`;
-                window.open(link, "_blank")?.focus();
-              } catch (error) {
-                alert("Error: Something went wrong...");
-                throw new Error("Couldn't open new page");
+              const PGNData = PGNElement.getAttribute("pgn");
+              if (!PGNData) {
+                throw new Error("PGN not found");
               }
+              const formatted = parser(PGNData);
+              lichessAnalysisLink =
+                `https://lichess.org/analysis/pgn/` +
+                formatted +
+                (black ? "?color=black" : "") +
+                `#${move}`;
             }
           }
         });
@@ -144,6 +152,20 @@ function lichess() {
     childList: true,
     subtree: true,
   });
+}
+
+function lichess() {
+  if (!lichessAnalysisLink) createLichessLink();
+
+  try {
+    if (lichessAnalysisLink) {
+      window.open(lichessAnalysisLink, "_blank")?.focus();
+    }
+    return;
+  } catch (error) {
+    alert("Error: Something went wrong...");
+    throw new Error("Couldn't open new page");
+  }
 }
 
 function isLiveGame() {
@@ -173,17 +195,16 @@ function isLiveGame() {
 
   handlePageLoad();
 
-  const sideBarIdentifier =
-    ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
-  const popUpIdentifier = `button[aria-label="Game Review"`;
+  const gameOverIdentifier = `a[aria-label="Game Review"]`;
 
   // Check for opening finished game
   function checkSideButton() {
-    const sideBarButton = document.querySelector(
-      sideBarIdentifier,
-    ) as HTMLButtonElement;
+    const sideBarButton = document.querySelectorAll(
+      gameOverIdentifier,
+    ) as NodeListOf<HTMLAnchorElement>;
     if (sideBarButton) {
-      handleButton(sideBarButton);
+      sideBarButton.forEach((button) => handleButton(button));
+      // handleButton(sideBarButton);
       return;
     }
     requestAnimationFrame(checkSideButton);
@@ -196,17 +217,17 @@ function isLiveGame() {
         if (mutation.type === "childList") {
           mutation.addedNodes.forEach((node) => {
             if (node instanceof HTMLElement) {
-              const popUpButton = node.querySelector(
-                `button[aria-label="Game Review"`,
-              ) as HTMLButtonElement;
+              const popUpButton = node.querySelectorAll(
+                gameOverIdentifier,
+              ) as NodeListOf<HTMLAnchorElement>;
               if (popUpButton) {
-                handleButton(popUpButton);
                 // Additional check for when game ends
-                const sideBarButton = document.querySelector(
-                  sideBarIdentifier,
-                ) as HTMLButtonElement;
+                // So, because we are also trying to target the quick-analysis tally with querySelectorAll, we avoid the initial check on the popUp
+                const sideBarButton = document.querySelectorAll(
+                  gameOverIdentifier,
+                ) as NodeListOf<HTMLAnchorElement>;
                 if (sideBarButton) {
-                  handleButton(sideBarButton);
+                  sideBarButton.forEach((button) => handleButton(button));
                 }
               }
             }
@@ -217,17 +238,16 @@ function isLiveGame() {
           mutation.type === "attributes" &&
           mutation.target instanceof HTMLElement
         ) {
-          const popUpButton = mutation.target.querySelector(
-            popUpIdentifier,
-          ) as HTMLButtonElement;
+          const popUpButton = mutation.target.querySelectorAll(
+            gameOverIdentifier,
+          ) as NodeListOf<HTMLAnchorElement>;
           if (popUpButton) {
-            handleButton(popUpButton);
             // Additional check for when game ends
-            const sideBarButton = document.querySelector(
-              sideBarIdentifier,
-            ) as HTMLButtonElement;
+            const sideBarButton = document.querySelectorAll(
+              gameOverIdentifier,
+            ) as NodeListOf<HTMLAnchorElement>;
             if (sideBarButton) {
-              handleButton(sideBarButton);
+              sideBarButton.forEach((button) => handleButton(button));
             }
           }
         }

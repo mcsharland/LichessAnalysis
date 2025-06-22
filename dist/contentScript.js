@@ -51,12 +51,13 @@ const parser = (pgn) => {
 };
 const disableButton = (button) => {
     if (button) {
-        button.disabled = true;
+        button.style.pointerEvents = "none";
+        button.setAttribute("hijacked", "true");
+        button.removeAttribute("href");
     }
 };
 const hijackButton = (button) => {
     if (button == null) {
-        console.error("Null button");
         throw new Error("button not found");
     }
     button.addEventListener("click", (event) => {
@@ -65,25 +66,28 @@ const hijackButton = (button) => {
         lichess();
         return false;
     }, true);
-    button.disabled = false;
-    if (button.getAttribute("aria-label") === "Game Review") {
-        const parent = button.parentElement;
-        const label = parent === null || parent === void 0 ? void 0 : parent.querySelector(".game-over-review-button-label");
-        if (label) {
-            label.textContent = "Lichess Analysis";
-        }
-        // warning first button also contains this class, no guaranteed unique classes
+    button.style.pointerEvents = ""; // reset
+    const sideBarLabel = button.querySelector(".cc-button-one-line");
+    if (sideBarLabel) {
+        sideBarLabel.textContent = "Lichess Analysis";
     }
-    else if (button.classList.contains("cc-button-full")) {
-        button.innerHTML =
-            '<span aria-hidden="true" class="icon-font-chess best cc-icon-large cc-button-icon"></span> <span class="cc-button-one-line">Lichess</span>';
+    const prevSibling = button.previousElementSibling;
+    if (prevSibling &&
+        prevSibling instanceof HTMLSpanElement &&
+        prevSibling.classList.contains("game-over-review-button-label")) {
+        prevSibling.textContent = "Lichess Analysis";
     }
 };
 function handleButton(button) {
+    if (button.getAttribute("hijacked") === "true")
+        return;
+    if (!lichessAnalysisLink)
+        createLichessLink();
     disableButton(button);
     hijackButton(button);
 }
-function lichess() {
+let lichessAnalysisLink = null;
+function createLichessLink() {
     const shareButton = document.querySelector(`button[aria-label="Share"]`);
     if (!shareButton) {
         alert("Error: Unable to find PGN...");
@@ -93,7 +97,7 @@ function lichess() {
         mutations.forEach((mutation) => {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach((node) => {
-                    var _a, _b, _c, _d, _e;
+                    var _a, _b, _c, _d;
                     if (node instanceof HTMLElement) {
                         const PGNElement = node.querySelector(`[pgn]`);
                         if (PGNElement) {
@@ -106,22 +110,16 @@ function lichess() {
                                 ? String(parseInt(moveData[1], 10) + 1)
                                 : null;
                             closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
-                            try {
-                                const PGNData = PGNElement.getAttribute("pgn");
-                                if (!PGNData) {
-                                    throw new Error("PGN not found");
-                                }
-                                const formatted = parser(PGNData);
-                                const link = `https://lichess.org/analysis/pgn/` +
+                            const PGNData = PGNElement.getAttribute("pgn");
+                            if (!PGNData) {
+                                throw new Error("PGN not found");
+                            }
+                            const formatted = parser(PGNData);
+                            lichessAnalysisLink =
+                                `https://lichess.org/analysis/pgn/` +
                                     formatted +
                                     (black ? "?color=black" : "") +
                                     `#${move}`;
-                                (_e = window.open(link, "_blank")) === null || _e === void 0 ? void 0 : _e.focus();
-                            }
-                            catch (error) {
-                                alert("Error: Something went wrong...");
-                                throw new Error("Couldn't open new page");
-                            }
                         }
                     }
                 });
@@ -133,6 +131,21 @@ function lichess() {
         childList: true,
         subtree: true,
     });
+}
+function lichess() {
+    var _a;
+    if (!lichessAnalysisLink)
+        createLichessLink();
+    try {
+        if (lichessAnalysisLink) {
+            (_a = window.open(lichessAnalysisLink, "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
+        }
+        return;
+    }
+    catch (error) {
+        alert("Error: Something went wrong...");
+        throw new Error("Couldn't open new page");
+    }
 }
 function isLiveGame() {
     return (window.location.hostname.includes(`chess.com`) &&
@@ -156,13 +169,13 @@ function isLiveGame() {
     // @ts-ignore
     window.navigation.addEventListener("currententrychange", handlePageLoad);
     handlePageLoad();
-    const sideBarIdentifier = ".cc-button-component.cc-button-primary.cc-button-full:is(.cc-button-xx-large, .cc-button-large)";
-    const popUpIdentifier = `button[aria-label="Game Review"`;
+    const gameOverIdentifier = `a[aria-label="Game Review"]`;
     // Check for opening finished game
     function checkSideButton() {
-        const sideBarButton = document.querySelector(sideBarIdentifier);
+        const sideBarButton = document.querySelectorAll(gameOverIdentifier);
         if (sideBarButton) {
-            handleButton(sideBarButton);
+            sideBarButton.forEach((button) => handleButton(button));
+            // handleButton(sideBarButton);
             return;
         }
         requestAnimationFrame(checkSideButton);
@@ -174,13 +187,13 @@ function isLiveGame() {
                 if (mutation.type === "childList") {
                     mutation.addedNodes.forEach((node) => {
                         if (node instanceof HTMLElement) {
-                            const popUpButton = node.querySelector(`button[aria-label="Game Review"`);
+                            const popUpButton = node.querySelectorAll(gameOverIdentifier);
                             if (popUpButton) {
-                                handleButton(popUpButton);
                                 // Additional check for when game ends
-                                const sideBarButton = document.querySelector(sideBarIdentifier);
+                                // So, because we are also trying to target the quick-analysis tally with querySelectorAll, we avoid the initial check on the popUp
+                                const sideBarButton = document.querySelectorAll(gameOverIdentifier);
                                 if (sideBarButton) {
-                                    handleButton(sideBarButton);
+                                    sideBarButton.forEach((button) => handleButton(button));
                                 }
                             }
                         }
@@ -188,13 +201,12 @@ function isLiveGame() {
                 }
                 if (mutation.type === "attributes" &&
                     mutation.target instanceof HTMLElement) {
-                    const popUpButton = mutation.target.querySelector(popUpIdentifier);
+                    const popUpButton = mutation.target.querySelectorAll(gameOverIdentifier);
                     if (popUpButton) {
-                        handleButton(popUpButton);
                         // Additional check for when game ends
-                        const sideBarButton = document.querySelector(sideBarIdentifier);
+                        const sideBarButton = document.querySelectorAll(gameOverIdentifier);
                         if (sideBarButton) {
-                            handleButton(sideBarButton);
+                            sideBarButton.forEach((button) => handleButton(button));
                         }
                     }
                 }
