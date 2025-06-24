@@ -81,13 +81,10 @@ const hijackButton = (button) => {
 function handleButton(button) {
     if (button.getAttribute("hijacked") === "true")
         return;
-    if (!lichessAnalysisLink)
-        createLichessLink();
     disableButton(button);
     hijackButton(button);
 }
-let lichessAnalysisLink = null;
-function createLichessLink() {
+function lichess() {
     const shareButton = document.querySelector(`button[aria-label="Share"]`);
     if (!shareButton) {
         alert("Error: Unable to find PGN...");
@@ -97,7 +94,7 @@ function createLichessLink() {
         mutations.forEach((mutation) => {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach((node) => {
-                    var _a, _b, _c, _d;
+                    var _a, _b, _c, _d, _e;
                     if (node instanceof HTMLElement) {
                         const PGNElement = node.querySelector(`[pgn]`);
                         if (PGNElement) {
@@ -115,11 +112,20 @@ function createLichessLink() {
                                 throw new Error("PGN not found");
                             }
                             const formatted = parser(PGNData);
-                            lichessAnalysisLink =
-                                `https://lichess.org/analysis/pgn/` +
-                                    formatted +
-                                    (black ? "?color=black" : "") +
-                                    `#${move}`;
+                            const link = `https://lichess.org/analysis/pgn/` +
+                                formatted +
+                                (black ? "?color=black" : "") +
+                                `#${move}`;
+                            try {
+                                if (link) {
+                                    (_e = window.open(link, "_blank")) === null || _e === void 0 ? void 0 : _e.focus();
+                                }
+                                return;
+                            }
+                            catch (error) {
+                                alert("Error: Something went wrong...");
+                                throw new Error("Couldn't open new page");
+                            }
                         }
                     }
                 });
@@ -131,21 +137,6 @@ function createLichessLink() {
         childList: true,
         subtree: true,
     });
-}
-function lichess() {
-    var _a;
-    if (!lichessAnalysisLink)
-        createLichessLink();
-    try {
-        if (lichessAnalysisLink) {
-            (_a = window.open(lichessAnalysisLink, "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
-        }
-        return;
-    }
-    catch (error) {
-        alert("Error: Something went wrong...");
-        throw new Error("Couldn't open new page");
-    }
 }
 function isLiveGame() {
     return (window.location.hostname.includes(`chess.com`) &&

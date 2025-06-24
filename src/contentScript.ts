@@ -85,14 +85,11 @@ const hijackButton = (button: HTMLAnchorElement) => {
 
 function handleButton(button: HTMLAnchorElement) {
   if (button.getAttribute("hijacked") === "true") return;
-  if (!lichessAnalysisLink) createLichessLink();
   disableButton(button);
   hijackButton(button);
 }
 
-let lichessAnalysisLink: string | null = null;
-
-function createLichessLink() {
+function lichess() {
   const shareButton = document.querySelector(
     `button[aria-label="Share"]`,
   ) as HTMLElement;
@@ -134,11 +131,21 @@ function createLichessLink() {
                 throw new Error("PGN not found");
               }
               const formatted = parser(PGNData);
-              lichessAnalysisLink =
+              const link =
                 `https://lichess.org/analysis/pgn/` +
                 formatted +
                 (black ? "?color=black" : "") +
                 `#${move}`;
+
+              try {
+                if (link) {
+                  window.open(link, "_blank")?.focus();
+                }
+                return;
+              } catch (error) {
+                alert("Error: Something went wrong...");
+                throw new Error("Couldn't open new page");
+              }
             }
           }
         });
@@ -152,20 +159,6 @@ function createLichessLink() {
     childList: true,
     subtree: true,
   });
-}
-
-function lichess() {
-  if (!lichessAnalysisLink) createLichessLink();
-
-  try {
-    if (lichessAnalysisLink) {
-      window.open(lichessAnalysisLink, "_blank")?.focus();
-    }
-    return;
-  } catch (error) {
-    alert("Error: Something went wrong...");
-    throw new Error("Couldn't open new page");
-  }
 }
 
 function isLiveGame() {
