@@ -71,11 +71,8 @@ const hijackButton = (button) => {
     if (sideBarLabel) {
         sideBarLabel.textContent = "Lichess Analysis";
     }
-    const prevSibling = button.previousElementSibling;
-    if (prevSibling &&
-        prevSibling instanceof HTMLSpanElement &&
-        prevSibling.classList.contains("game-over-review-button-label")) {
-        prevSibling.textContent = "Lichess Analysis";
+    else if (button.classList.contains("game-over-review-button-game-over-review-button")) {
+        button.textContent = "Lichess Analysis";
     }
 };
 function handleButton(button) {

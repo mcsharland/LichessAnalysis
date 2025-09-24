@@ -71,15 +71,10 @@ const hijackButton = (button: HTMLAnchorElement) => {
   const sideBarLabel = button.querySelector(".cc-button-one-line");
   if (sideBarLabel) {
     sideBarLabel.textContent = "Lichess Analysis";
-  }
-
-  const prevSibling = button.previousElementSibling;
-  if (
-    prevSibling &&
-    prevSibling instanceof HTMLSpanElement &&
-    prevSibling.classList.contains("game-over-review-button-label")
+  } else if (
+    button.classList.contains("game-over-review-button-game-over-review-button")
   ) {
-    prevSibling.textContent = "Lichess Analysis";
+    button.textContent = "Lichess Analysis";
   }
 };
 
