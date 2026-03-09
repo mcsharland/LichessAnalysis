@@ -91,18 +91,22 @@ function lichess() {
         mutations.forEach((mutation) => {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach((node) => {
-                    var _a, _b, _c, _d, _e;
+                    var _a, _b, _c, _d, _e, _f;
                     if (node instanceof HTMLElement) {
                         const PGNElement = node.querySelector(`[pgn]`);
                         if (PGNElement) {
                             pgnObserver.disconnect();
                             const closeButton = node.querySelector(`button[aria-label="Close"]`);
-                            const black = document.getElementsByClassName("board flipped").length > 0;
+                            const black = document.getElementsByClassName("board flipped")
+                                .length > 0;
                             const moveData = (_d = (_c = (_b = (_a = document
                                 .querySelector("wc-simple-move-list")) === null || _a === void 0 ? void 0 : _a.getElementsByClassName("selected")[0]) === null || _b === void 0 ? void 0 : _b.parentElement) === null || _c === void 0 ? void 0 : _c.dataset.node) === null || _d === void 0 ? void 0 : _d.split("-");
-                            let move = moveData && moveData[0] === "0"
-                                ? String(parseInt(moveData[1], 10) + 1)
-                                : null;
+                            const openingMove = (_e = document.querySelector("span.eco-opening-name")) === null || _e === void 0 ? void 0 : _e.textContent;
+                            let move = openingMove === "Starting Position"
+                                ? 0
+                                : moveData && moveData[0] === "0"
+                                    ? String(parseInt(moveData[1], 10) + 1)
+                                    : null;
                             closeButton === null || closeButton === void 0 ? void 0 : closeButton.click();
                             const PGNData = PGNElement.getAttribute("pgn");
                             if (!PGNData) {
@@ -115,7 +119,7 @@ function lichess() {
                                 `#${move}`;
                             try {
                                 if (link) {
-                                    (_e = window.open(link, "_blank")) === null || _e === void 0 ? void 0 : _e.focus();
+                                    (_f = window.open(link, "_blank")) === null || _f === void 0 ? void 0 : _f.focus();
                                 }
                                 return;
                             }

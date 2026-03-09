@@ -26,7 +26,9 @@ chrome.action.onClicked.addListener(async (tab) => {
     try {
         if ((tab === null || tab === void 0 ? void 0 : tab.id) && ((_a = tab === null || tab === void 0 ? void 0 : tab.url) === null || _a === void 0 ? void 0 : _a.includes(`chess.com/game/`))) {
             // Masked temporarily
-            const response = await chrome.tabs.sendMessage(tab.id, { type: "live" });
+            const response = await chrome.tabs.sendMessage(tab.id, {
+                type: "live",
+            });
         }
     }
     catch (e) {
