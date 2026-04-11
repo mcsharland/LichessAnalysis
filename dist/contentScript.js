@@ -71,7 +71,7 @@ const hijackButton = (button) => {
     if (sideBarLabel) {
         sideBarLabel.textContent = "Lichess Analysis";
     }
-    else if (button.classList.contains("game-over-review-button-game-over-review-button")) {
+    else if (button.classList.contains("game-over-primary-cta-game-over-primary-cta")) {
         button.textContent = "Lichess Analysis";
     }
 };
