@@ -1,11 +1,7 @@
-/*
-  Still references sidebar and popup as distinct buttons despite both now holding NodeLists
-  This can be refactored later, but for the time being serves as a reminder to the specific trigger
-  (I'm too lazy to change them now)
-*/
 declare global {
     interface Window {
         gameEndObserver?: MutationObserver | null;
+        lichessClickHandlerAttached?: boolean;
     }
 }
 
@@ -42,49 +38,6 @@ const parser = (pgn: string) => {
         .join("_")
         .replace(/#$/, ""); // remove a trailing '#' to ensure board flip works
 };
-
-const disableButton = (button: HTMLAnchorElement) => {
-    if (button) {
-        button.style.pointerEvents = "none";
-        button.setAttribute("hijacked", "true");
-        button.removeAttribute("href");
-    }
-};
-
-const hijackButton = (button: HTMLAnchorElement) => {
-    if (button == null) {
-        throw new Error("button not found");
-    }
-    button.addEventListener(
-        "click",
-        (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            lichess();
-            return false;
-        },
-        true,
-    );
-
-    button.style.pointerEvents = ""; // reset
-
-    const sideBarLabel = button.querySelector(".cc-button-one-line");
-    if (sideBarLabel) {
-        sideBarLabel.textContent = "Lichess Analysis";
-    } else if (
-        button.classList.contains(
-            "game-over-primary-cta-game-over-primary-cta",
-        )
-    ) {
-        button.textContent = "Lichess Analysis";
-    }
-};
-
-function handleButton(button: HTMLAnchorElement) {
-    if (button.getAttribute("hijacked") === "true") return;
-    disableButton(button);
-    hijackButton(button);
-}
 
 function lichess() {
     const shareButton = document.querySelector(
@@ -165,6 +118,117 @@ function lichess() {
     });
 }
 
+
+const ANALYSIS_LINK_SELECTOR = 'a[href*="/analysis/game/live/"]';
+
+const LICHESS_LABEL = "Lichess Analysis";
+
+function neutralizeHrefs(root: ParentNode = document) {
+    root.querySelectorAll<HTMLAnchorElement>(ANALYSIS_LINK_SELECTOR).forEach(
+        (anchor) => {
+            if (anchor.dataset.lichessHrefStripped === "true") return;
+            if (anchor.hasAttribute("href")) {
+                anchor.dataset.lichessOriginalHref =
+                    anchor.getAttribute("href") || "";
+                anchor.removeAttribute("href");
+            }
+            anchor.style.pointerEvents = "";
+            anchor.dataset.lichessHrefStripped = "true";
+        },
+    );
+}
+
+// only buttons with visible text need a rule
+// each rule is idempotent with its own data tag
+interface LabelRule {
+    name: string;
+    // selector chain for variant's container, ordered by recency
+    // first selector wins, older selectors are used as fallbacks for site refactors
+    container: string[];
+    // marks processed elements, must be unique
+    tag: string;
+    // callback
+    apply: (el: HTMLElement) => void;
+}
+
+const LABEL_RULES: LabelRule[] = [
+    // sidebar
+    {
+        name: "sidebar",
+        container: [
+            'a[data-cy="sidebar-game-review-button"]',
+            'a[aria-label="Game Review"]',
+        ],
+        tag: "lichessLabelSidebar",
+        apply: (anchor) => {
+            const label = anchor.querySelector(".cc-button-one-line");
+            if (label) {
+                label.textContent = LICHESS_LABEL;
+                anchor.setAttribute("aria-label", LICHESS_LABEL);
+            }
+        },
+    },
+
+    // popup
+    {
+        name: "popup",
+        container: [".game-over-primary-cta-game-over-primary-cta"],
+        tag: "lichessLabelPopup",
+        apply: (anchor) => {
+            // guard against the sidebar also matching by accident
+            if (anchor.querySelector(".cc-button-one-line")) return;
+            anchor.textContent = LICHESS_LABEL;
+            anchor.setAttribute("aria-label", LICHESS_LABEL);
+        },
+    },
+];
+
+function applyLabelRules(root: ParentNode = document) {
+    for (const rule of LABEL_RULES) {
+        try {
+            for (const selector of rule.container) {
+                const matches = root.querySelectorAll<HTMLElement>(selector);
+                matches.forEach((el) => {
+                    if (el.dataset[rule.tag] === "true") return;
+                    rule.apply(el);
+                    el.dataset[rule.tag] = "true";
+                });
+            }
+        } catch (err) {
+            console.warn(`[lichess-redirect] rule "${rule.name}" threw`, err);
+        }
+    }
+}
+
+function sweep(root: ParentNode = document) {
+    neutralizeHrefs(root);
+    applyLabelRules(root);
+}
+
+function attachClickHandler() {
+    if (window.lichessClickHandlerAttached) return;
+    window.lichessClickHandlerAttached = true;
+
+    const handler = (e: MouseEvent) => {
+        const target = e.target;
+        if (!(target instanceof Element)) return;
+        // check the live href pattern (in case we got here before neutralizeHrefs ran)
+        const link = target.closest<HTMLAnchorElement>(ANALYSIS_LINK_SELECTOR);
+        const stripped = target.closest<HTMLElement>(
+            '[data-lichess-href-stripped="true"]',
+        );
+        if (!link && !stripped) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        lichess();
+    };
+
+    // capture phase so we beat chess.com's own listeners
+    // auxclick covers middle-click; click covers everything else
+    document.addEventListener("click", handler, { capture: true });
+    document.addEventListener("auxclick", handler, { capture: true });
+}
+
 function isLiveGame() {
     return (
         window.location.hostname.includes(`chess.com`) &&
@@ -172,98 +236,40 @@ function isLiveGame() {
     );
 }
 
-(function () {
-    function handlePageLoad() {
-        if (isLiveGame()) {
-            if (!window.gameEndObserver) {
-                initializeObserver();
-            }
-            requestAnimationFrame(checkSideButton);
+function initializeObserver() {
+    const observer = new MutationObserver(() => sweep(document));
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+    });
+
+    window.gameEndObserver = observer;
+
+    // initial pass for elements already in the DOM at load
+    sweep(document);
+}
+
+function handlePageLoad() {
+    if (isLiveGame()) {
+        attachClickHandler();
+        if (!window.gameEndObserver) {
+            initializeObserver();
         } else {
-            if (window.gameEndObserver) {
-                window.gameEndObserver.disconnect();
-                window.gameEndObserver = null;
-            }
+            sweep(document);
+        }
+    } else {
+        if (window.gameEndObserver) {
+            window.gameEndObserver.disconnect();
+            window.gameEndObserver = null;
         }
     }
+}
 
-    // @ts-ignore
-    window.navigation.addEventListener("currententrychange", handlePageLoad);
-
-    handlePageLoad();
-
-    const gameOverIdentifier = `a[aria-label="Game Review"]`;
-
-    // Check for opening finished game
-    function checkSideButton() {
-        const sideBarButton = document.querySelectorAll(
-            gameOverIdentifier,
-        ) as NodeListOf<HTMLAnchorElement>;
-        if (sideBarButton) {
-            sideBarButton.forEach((button) => handleButton(button));
-            // handleButton(sideBarButton);
-            return;
-        }
-        requestAnimationFrame(checkSideButton);
-    }
-
-    function initializeObserver() {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                // Redundancy because of different behavior with games <5 moves
-                if (mutation.type === "childList") {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node instanceof HTMLElement) {
-                            const popUpButton = node.querySelectorAll(
-                                gameOverIdentifier,
-                            ) as NodeListOf<HTMLAnchorElement>;
-                            if (popUpButton) {
-                                // Additional check for when game ends
-                                // So, because we are also trying to target the quick-analysis tally with querySelectorAll, we avoid the initial check on the popUp
-                                const sideBarButton = document.querySelectorAll(
-                                    gameOverIdentifier,
-                                ) as NodeListOf<HTMLAnchorElement>;
-                                if (sideBarButton) {
-                                    sideBarButton.forEach((button) =>
-                                        handleButton(button),
-                                    );
-                                }
-                            }
-                        }
-                    });
-                }
-
-                if (
-                    mutation.type === "attributes" &&
-                    mutation.target instanceof HTMLElement
-                ) {
-                    const popUpButton = mutation.target.querySelectorAll(
-                        gameOverIdentifier,
-                    ) as NodeListOf<HTMLAnchorElement>;
-                    if (popUpButton) {
-                        // Additional check for when game ends
-                        const sideBarButton = document.querySelectorAll(
-                            gameOverIdentifier,
-                        ) as NodeListOf<HTMLAnchorElement>;
-                        if (sideBarButton) {
-                            sideBarButton.forEach((button) =>
-                                handleButton(button),
-                            );
-                        }
-                    }
-                }
-            });
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-        });
-
-        window.gameEndObserver = observer;
-    }
-})();
+// @ts-ignore - new navigation API
+window.navigation.addEventListener("currententrychange", handlePageLoad);
+handlePageLoad();
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === "live") {
